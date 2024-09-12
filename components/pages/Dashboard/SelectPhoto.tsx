@@ -144,7 +144,12 @@ export default function SelectPhoto() {
 
           {selectedImage && (
             <div className="flex flex-col items-center space-y-4">
-              <Image src={selectedImage} alt="Selected" className="w-80 h-80" />
+              <Image
+                src={selectedImage}
+                alt="Selected"
+                width={80}
+                height={80}
+              />
               <Button onClick={() => setSelectedImage(null)}>Remove</Button>
             </div>
           )}

@@ -21,6 +21,7 @@ import {
   Popover,
   PopoverContent,
   PopoverTrigger,
+  Button, // Import Button if you plan to use it for submitting
 } from "@/components/ui";
 import { IoIosAddCircle } from "react-icons/io";
 import { IoCalendarSharp } from "react-icons/io5";
@@ -31,6 +32,7 @@ import Category from "./Category";
 import { useEffect, useRef, useState } from "react";
 import SelectPhoto from "./SelectPhoto";
 import { format } from "date-fns"; // Add date formatting
+import { addExpenseToFirestore } from "@/lib/firestoreService"; // Import addExpenseToFirestore
 
 export default function AddTransaction() {
   const [addAmount, setAddAmount] = useState<boolean>(false);
@@ -38,7 +40,7 @@ export default function AddTransaction() {
   const [addNote, setAddNote] = useState(false);
   const [noteText, setNoteText] = useState("Write a note ...");
   const [selectedLabel, setSelectedLabel] = useState<string | null>(null);
-  const [date, setDate] = useState<Date | null>(null); // State for date
+  const [date, setDate] = useState<Date | null>(null);
 
   const noteRef = useRef<HTMLDivElement | null>(null);
   const amountRef = useRef<HTMLInputElement | null>(null);
@@ -59,6 +61,35 @@ export default function AddTransaction() {
   }, []);
 
   const labels = ["Chicken Rice", "Kolo Mee", "Coffee", "Pan Mee", "Expense"];
+
+  // Function to handle form submission
+  const handleSubmit = async () => {
+    if (date && amount > 0 && selectedLabel) {
+      const items = [
+        {
+          icon: "Food", // Update according to your icon logic
+          title: selectedLabel,
+          description: noteText,
+          price: amount,
+        },
+      ];
+
+      try {
+        await addExpenseToFirestore(format(date, "yyyy-MM-dd"), items);
+        alert("Expense added successfully!");
+        // Optionally reset the form
+        setAmount(0);
+        setNoteText("Write a note ...");
+        setSelectedLabel(null);
+        setDate(null);
+      } catch (error) {
+        console.error("Error adding expense: ", error);
+        alert("Failed to add expense.");
+      }
+    } else {
+      alert("Please fill out all fields.");
+    }
+  };
 
   return (
     <Drawer>
@@ -182,6 +213,13 @@ export default function AddTransaction() {
 
           <div className="mx-auto">
             <Category />
+          </div>
+
+          {/* Add a submit button */}
+          <div className="flex justify-end">
+            <Button onClick={handleSubmit} className="bg-blue-500 text-white">
+              Add Expense
+            </Button>
           </div>
         </div>
       </DrawerContent>

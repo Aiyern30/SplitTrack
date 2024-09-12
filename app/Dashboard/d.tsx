@@ -1,6 +1,5 @@
 "use client";
-
-import React, { useEffect, useState } from "react";
+import React from "react";
 import useAuth from "@/lib/useAuth";
 import LogoutButton from "@/components/LogoutButton";
 import DashboardHeader from "@/components/DashboardHeader";
@@ -12,8 +11,6 @@ import {
   TabsTrigger,
 } from "@/components/ui";
 import AddTransaction from "@/components/pages/Dashboard/AddTransaction";
-import { fetchExpensesFromFirestore } from "@/lib/firestoreService";
-
 interface Item {
   icon: string;
   title: string;
@@ -26,28 +23,76 @@ interface DataItem {
   item: Item[];
 }
 
+const data: DataItem[] = [
+  {
+    date: "2022-01-03",
+    item: [
+      {
+        icon: "Food",
+        title: "Dinner at Canto",
+        description: null,
+        price: -2000,
+      },
+      {
+        icon: "Food",
+        title: "Dinner at Sunway Plaza",
+        description: "Chicken Rice",
+        price: -20,
+      },
+    ],
+  },
+  {
+    date: "2022-01-02",
+    item: [
+      {
+        icon: "Food",
+        title: "Dinner at Canto",
+        description: null,
+        price: -2000,
+      },
+      {
+        icon: "Food",
+        title: "Dinner at Sunway Plaza",
+        description: "Chicken Rice",
+        price: -20,
+      },
+      {
+        icon: "Food",
+        title: "Dinner at Canto",
+        description: null,
+        price: -2000,
+      },
+      {
+        icon: "Food",
+        title: "Dinner at Sunway Plaza",
+        description: "Chicken Rice",
+        price: -20,
+      },
+    ],
+  },
+  {
+    date: "2022-01-01",
+    item: [
+      {
+        icon: "Food",
+        title: "Dinner at Canto",
+        description: null,
+        price: -2000,
+      },
+      {
+        icon: "Food",
+        title: "Dinner at Sunway Plaza",
+        description: "Chicken Rice",
+        price: -20,
+      },
+    ],
+  },
+];
+
 const Dashboard = () => {
   const { auth, loading } = useAuth();
-  const [data, setData] = useState<DataItem[]>([]);
-  console.log("data", data);
-  const [loadingData, setLoadingData] = useState(true);
 
-  useEffect(() => {
-    const loadData = async () => {
-      try {
-        const expenses = await fetchExpensesFromFirestore();
-        setData(expenses);
-      } catch (error) {
-        console.error("Error fetching data: ", error);
-      } finally {
-        setLoadingData(false);
-      }
-    };
-
-    loadData();
-  }, []);
-
-  if (loading || loadingData) return <div>Loading...</div>;
+  if (loading) return <div>Loading...</div>;
 
   if (!auth) return null;
 
@@ -62,7 +107,6 @@ const Dashboard = () => {
   const calculateTotal = (items: Item[]): number => {
     return items.reduce((total, item) => total + item.price, 0);
   };
-
   const total = data.reduce(
     (acc, dataItem) => acc + calculateTotal(dataItem.item),
     0
@@ -108,7 +152,7 @@ const Dashboard = () => {
                           >
                             <div className="flex items-center">
                               {/* Display icon if needed */}
-                              {/* <img src={`/icons/${item.icon}.png`} alt={item.icon} className="w-8 h-8 mr-4"/> */}
+                              {/* <img src={/icons/${item.icon}.png} alt={item.icon} className="w-8 h-8 mr-4"/> */}
                               {item.icon}
                               <div className="pl-7">
                                 <div className="font-semibold">
