@@ -10,8 +10,7 @@ import {
   TabsList,
   TabsTrigger,
 } from "@/components/ui";
-
-// Define types for your data structure
+import AddTransaction from "@/components/pages/Dashboard/AddTransaction";
 interface Item {
   icon: string;
   title: string;
@@ -97,7 +96,6 @@ const Dashboard = () => {
 
   if (!auth) return null;
 
-  // Function to chunk the items into pairs
   const chunkItems = (items: Item[]): Item[][] => {
     const result: Item[][] = [];
     for (let i = 0; i < items.length; i += 2) {
@@ -106,7 +104,6 @@ const Dashboard = () => {
     return result;
   };
 
-  // Function to calculate the total price for each date
   const calculateTotal = (items: Item[]): number => {
     return items.reduce((total, item) => total + item.price, 0);
   };
@@ -122,15 +119,18 @@ const Dashboard = () => {
       <div className="px-16 py-8">
         <Card className="p-0">
           <Tabs defaultValue="OWN" className="w-full">
-            <div className="flex justify-center p-4">
-              <TabsList>
+            <div className="flex flex-col sm:flex-row items-center p-4">
+              <TabsList className="mx-auto">
                 <TabsTrigger value="OWN">OWN</TabsTrigger>
                 <TabsTrigger value="FRIENDS">FRIENDS</TabsTrigger>
                 <TabsTrigger value="GROUPS">GROUPS</TabsTrigger>
                 <TabsTrigger value="ACTIVITY">ACTIVITY</TabsTrigger>
               </TabsList>
+              <div className="flex justify-end text-6xl cursor-pointer">
+                <AddTransaction />
+              </div>
             </div>
-            {/* Tab content */}
+
             <TabsContent value="OWN" className="p-4">
               {data.map((dataItem, index) => (
                 <div key={index} className="mb-8">

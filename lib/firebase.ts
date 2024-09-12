@@ -1,5 +1,6 @@
 import { initializeApp, FirebaseApp } from "firebase/app";
 import { getAuth, Auth } from "firebase/auth";
+import { getFirestore, Firestore } from "firebase/firestore";
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY!,
@@ -12,8 +13,9 @@ const firebaseConfig = {
 
 let firebaseApp: FirebaseApp | undefined;
 let auth: Auth | undefined;
+let firestore: Firestore | undefined;
 
-const initializeFirebase = (): Auth => {
+const initializeFirebase = () => {
   if (typeof window !== "undefined") {
     if (!firebaseApp) {
       firebaseApp = initializeApp(firebaseConfig);
@@ -21,12 +23,17 @@ const initializeFirebase = (): Auth => {
     if (!auth) {
       auth = getAuth(firebaseApp);
     }
-    if (!auth) {
-      throw new Error("Failed to initialize Firebase Auth.");
+    if (!firestore) {
+      firestore = getFirestore(firebaseApp);
     }
-    return auth;
+    if (!auth || !firestore) {
+      throw new Error("Failed to initialize Firebase services.");
+    }
+    return { auth, firestore };
   } else {
-    throw new Error("Firebase Auth can only be initialized in the browser.");
+    throw new Error(
+      "Firebase services can only be initialized in the browser."
+    );
   }
 };
 

@@ -9,7 +9,7 @@ const useAuth = () => {
   const router = useRouter();
 
   useEffect(() => {
-    const auth = initializeFirebase(); // Initialize Firebase and get the auth instance
+    const { auth } = initializeFirebase(); // Initialize Firebase and get the auth instance
 
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setLoading(false);

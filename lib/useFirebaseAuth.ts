@@ -3,17 +3,17 @@ import { Auth } from "firebase/auth";
 import { initializeFirebase } from "./firebase";
 
 export const useFirebaseAuth = (): Auth | null => {
-  const [firebaseAuth, setFirebaseAuth] = useState<Auth | null>(null);
+  const [auth, setAuth] = useState<Auth | null>(null);
 
   useEffect(() => {
     try {
-      const auth = initializeFirebase();
-      setFirebaseAuth(auth);
+      const { auth: firebaseAuth } = initializeFirebase();
+      setAuth(firebaseAuth);
     } catch (error) {
       console.error("Error initializing Firebase Auth:", error);
-      setFirebaseAuth(null);
+      setAuth(null);
     }
   }, []);
 
-  return firebaseAuth;
+  return auth;
 };

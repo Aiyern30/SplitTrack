@@ -23,3 +23,5 @@ export * from "./Sheet";
 export * from "./Skeleton";
 export * from "./Tabs";
 export * from "./Textarea";
+export * from "./Calendar";
+export * from "./Popover";
