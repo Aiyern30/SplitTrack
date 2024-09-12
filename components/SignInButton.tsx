@@ -1,9 +1,8 @@
-// components/SignInButton.tsx
 import Image from "next/image";
 import React from "react";
 import { useRouter } from "next/navigation";
 import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
-import { useFirebaseAuth } from "@/lib/useFirebaseAuth"; // Ensure correct import
+import { useFirebaseAuth } from "@/lib/useFirebaseAuth"; // Use the hook
 
 const SignInButton: React.FC = () => {
   const auth = useFirebaseAuth();

@@ -1,8 +1,6 @@
-// lib/firebase.ts
 import { initializeApp, FirebaseApp } from "firebase/app";
 import { getAuth, Auth } from "firebase/auth";
 
-// Define the Firebase config
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY!,
   authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN!,
@@ -12,13 +10,24 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID!,
 };
 
-let firebaseApp: FirebaseApp;
-let auth: Auth;
+let firebaseApp: FirebaseApp | undefined;
+let auth: Auth | undefined;
 
-if (typeof window !== "undefined") {
-  // Ensure this code runs only in the browser
-  firebaseApp = initializeApp(firebaseConfig);
-  auth = getAuth(firebaseApp);
-}
+const initializeFirebase = (): Auth => {
+  if (typeof window !== "undefined") {
+    if (!firebaseApp) {
+      firebaseApp = initializeApp(firebaseConfig);
+    }
+    if (!auth) {
+      auth = getAuth(firebaseApp);
+    }
+    if (!auth) {
+      throw new Error("Failed to initialize Firebase Auth.");
+    }
+    return auth;
+  } else {
+    throw new Error("Firebase Auth can only be initialized in the browser.");
+  }
+};
 
-export { auth };
+export { initializeFirebase };
