@@ -76,9 +76,12 @@ export default function Category() {
               {expensesIcons.map((item, index) => (
                 <div
                   key={index}
-                  className="flex items-center justify-center p-4 cursor-pointer rounded-xl"
+                  className="flex  items-center justify-center p-4 cursor-pointer rounded-xl"
                 >
-                  {item.icon}
+                  <div className="flex flex-col items-center">
+                    {item.icon}
+                    {item.category}
+                  </div>
                 </div>
               ))}
             </div>
@@ -90,7 +93,10 @@ export default function Category() {
                   key={index}
                   className="flex items-center justify-center p-4 cursor-pointer rounded-xl"
                 >
-                  {item.icon}
+                  <div className="flex flex-col items-center">
+                    {item.icon}
+                    {item.category}
+                  </div>
                 </div>
               ))}
             </div>

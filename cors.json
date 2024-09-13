@@ -1,0 +1,7 @@
+[
+  {
+    "origin": ["http://localhost:3000", "https://split-track.vercel.app"],
+    "method": ["GET", "PUT", "POST", "DELETE"],
+    "maxAgeSeconds": 3600
+  }
+]

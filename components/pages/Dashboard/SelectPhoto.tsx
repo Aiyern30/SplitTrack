@@ -11,7 +11,11 @@ import { FaPhotoVideo, FaChevronRight } from "react-icons/fa";
 import { MdAddPhotoAlternate } from "react-icons/md";
 import Image from "next/image";
 
-export default function SelectPhoto() {
+interface SelectPhotoProps {
+  onSelectImage: (imageUrl: string) => void; // Callback prop to pass selected image URL
+}
+
+export default function SelectPhoto({ onSelectImage }: SelectPhotoProps) {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -20,32 +24,37 @@ export default function SelectPhoto() {
   const [photoTaken, setPhotoTaken] = useState(false);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
+  const cloudinaryUpload = async (imageData: string) => {
+    const data = new FormData();
+    data.append("file", imageData);
+    data.append("upload_preset", "r8nahj4h"); // Use the Unsigned preset name
+    data.append("api_key", "597726494159232");
+
+    try {
+      const response = await fetch(
+        "https://api.cloudinary.com/v1_1/dhkuamrcj/image/upload",
+        {
+          method: "POST",
+          body: data,
+        }
+      );
+      const result = await response.json();
+      console.log(result.secure_url);
+
+      return result.secure_url;
+    } catch (error) {
+      console.error("Error uploading to Cloudinary:", error);
+      return null;
+    }
+  };
+
   const handleFileSelect = () => {
     if (fileInputRef.current) {
       fileInputRef.current.click();
     }
   };
 
-  //   const handleTakePhoto = async () => {
-  //     try {
-  //       if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-  //         const stream = await navigator.mediaDevices.getUserMedia({
-  //           video: true,
-  //         });
-  //         if (videoRef.current) {
-  //           videoRef.current.srcObject = stream;
-  //           videoRef.current.play();
-  //           setIsCameraActive(true);
-  //         }
-  //       } else {
-  //         alert("Camera is not supported in this browser.");
-  //       }
-  //     } catch (err) {
-  //       console.error("Error accessing camera:", err);
-  //     }
-  //   };
-
-  const capturePhoto = () => {
+  const capturePhoto = async () => {
     if (videoRef.current && canvasRef.current) {
       const context = canvasRef.current.getContext("2d");
       if (context) {
@@ -56,21 +65,34 @@ export default function SelectPhoto() {
           canvasRef.current.width,
           canvasRef.current.height
         );
-        const imageUrl = canvasRef.current.toDataURL("image/png");
-        setSelectedImage(imageUrl);
+        const imageDataUrl = canvasRef.current.toDataURL("image/png");
+        setSelectedImage(imageDataUrl);
         setPhotoTaken(true);
         videoRef.current.srcObject = null;
         setIsCameraActive(false);
+
+        // Upload to Cloudinary
+        const imageUrl = await cloudinaryUpload(imageDataUrl);
+        if (imageUrl) {
+          onSelectImage(imageUrl); // Pass the Cloudinary URL to the parent
+        }
       }
     }
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       const reader = new FileReader();
-      reader.onload = (event) => {
-        setSelectedImage(event.target?.result as string);
+      reader.onload = async (event) => {
+        const imageDataUrl = event.target?.result as string;
+        setSelectedImage(imageDataUrl);
+
+        // Upload to Cloudinary
+        const imageUrl = await cloudinaryUpload(imageDataUrl);
+        if (imageUrl) {
+          onSelectImage(imageUrl); // Pass the Cloudinary URL to the parent
+        }
       };
       reader.readAsDataURL(file);
     }
@@ -107,15 +129,6 @@ export default function SelectPhoto() {
         <div className="flex flex-col space-y-5 items-center justify-center">
           {!isCameraActive && !photoTaken && (
             <>
-              {/* <div className="flex flex-col items-center text-black">
-                <FaCamera
-                  size={120}
-                  className="cursor-pointer"
-                  color="black"
-                  onClick={handleTakePhoto}
-                />
-                <div>Take photo</div>
-              </div> */}
               <div className="flex flex-col items-center text-black">
                 <MdAddPhotoAlternate
                   className="cursor-pointer"

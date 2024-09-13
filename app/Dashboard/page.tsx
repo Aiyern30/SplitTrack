@@ -5,6 +5,9 @@ import useAuth from "@/lib/useAuth";
 import LogoutButton from "@/components/LogoutButton";
 import DashboardHeader from "@/components/DashboardHeader";
 import {
+  // Avatar,
+  // AvatarFallback,
+  // AvatarImage,
   Card,
   Tabs,
   TabsContent,
@@ -19,24 +22,39 @@ interface Item {
   title: string;
   description: string | null;
   price: number;
+  imageUrl?: string;
 }
 
 interface DataItem {
   date: string;
-  item: Item[];
+  items: Item[];
 }
+
+const groupByDate = (data: DataItem[]): Record<string, Item[]> => {
+  return data.reduce((acc: Record<string, Item[]>, curr: DataItem) => {
+    if (!acc[curr.date]) {
+      acc[curr.date] = [];
+    }
+    acc[curr.date].push(...curr.items); // Use 'items' instead of 'item'
+    return acc;
+  }, {});
+};
 
 const Dashboard = () => {
   const { auth, loading } = useAuth();
   const [data, setData] = useState<DataItem[]>([]);
-  console.log("data", data);
   const [loadingData, setLoadingData] = useState(true);
+  const [drawerClose] = useState(false);
 
   useEffect(() => {
     const loadData = async () => {
       try {
-        const expenses = await fetchExpensesFromFirestore();
-        setData(expenses);
+        if (auth) {
+          const expenses = await fetchExpensesFromFirestore();
+          setData(expenses);
+        } else {
+          console.error("User not authenticated");
+        }
       } catch (error) {
         console.error("Error fetching data: ", error);
       } finally {
@@ -45,11 +63,28 @@ const Dashboard = () => {
     };
 
     loadData();
-  }, []);
+  }, [auth, drawerClose]);
+
+  const refreshData = async () => {
+    setLoadingData(true);
+    try {
+      if (auth) {
+        const expenses = await fetchExpensesFromFirestore();
+        setData(expenses);
+      }
+    } catch (error) {
+      console.error("Error refreshing data: ", error);
+    } finally {
+      setLoadingData(false);
+    }
+  };
 
   if (loading || loadingData) return <div>Loading...</div>;
 
   if (!auth) return null;
+
+  // Group expenses by date
+  const groupedData = groupByDate(data);
 
   const chunkItems = (items: Item[]): Item[][] => {
     const result: Item[][] = [];
@@ -64,7 +99,7 @@ const Dashboard = () => {
   };
 
   const total = data.reduce(
-    (acc, dataItem) => acc + calculateTotal(dataItem.item),
+    (acc, dataItem) => acc + calculateTotal(dataItem.items),
     0
   );
 
@@ -83,23 +118,21 @@ const Dashboard = () => {
                 <TabsTrigger value="ACTIVITY">ACTIVITY</TabsTrigger>
               </TabsList>
               <div className="flex justify-end text-6xl cursor-pointer">
-                <AddTransaction />
+                <AddTransaction onSuccess={refreshData} />
               </div>
             </div>
 
             <TabsContent value="OWN" className="p-4">
-              {data.map((dataItem, index) => (
+              {Object.entries(groupedData).map(([date, items], index) => (
                 <div key={index} className="mb-8">
                   <Card className="mb-4">
                     <div className="flex justify-between mb-4 bg-[#D9D9D9] px-4 py-2 rounded-t-xl">
-                      <div className="font-semibold text-lg">
-                        {dataItem.date}
-                      </div>
+                      <div className="font-semibold text-lg">{date}</div>
                       <div className="font-bold text-red-500">
-                        Total: {calculateTotal(dataItem.item)}
+                        Total: {calculateTotal(items)}
                       </div>
                     </div>
-                    {chunkItems(dataItem.item).map((itemPair, pairIndex) => (
+                    {chunkItems(items).map((itemPair, pairIndex) => (
                       <div key={pairIndex} className="px-4 py-2">
                         {itemPair.map((item, itemIndex) => (
                           <div
@@ -107,8 +140,6 @@ const Dashboard = () => {
                             className="flex items-center justify-between mb-4 last:mb-0"
                           >
                             <div className="flex items-center">
-                              {/* Display icon if needed */}
-                              {/* <img src={`/icons/${item.icon}.png`} alt={item.icon} className="w-8 h-8 mr-4"/> */}
                               {item.icon}
                               <div className="pl-7">
                                 <div className="font-semibold">
@@ -121,8 +152,9 @@ const Dashboard = () => {
                                 )}
                               </div>
                             </div>
+
                             <div className="text-right font-bold text-red-500">
-                              {item.price} {/* You might want to format this */}
+                              {item.price}
                             </div>
                           </div>
                         ))}
@@ -133,15 +165,12 @@ const Dashboard = () => {
               ))}
             </TabsContent>
             <TabsContent value="FRIENDS" className="p-4">
-              {/* Add content for FRIENDS tab here */}
               <div>Content for FRIENDS tab</div>
             </TabsContent>
             <TabsContent value="GROUPS" className="p-4">
-              {/* Add content for GROUPS tab here */}
               <div>Content for GROUPS tab</div>
             </TabsContent>
             <TabsContent value="ACTIVITY" className="p-4">
-              {/* Add content for ACTIVITY tab here */}
               <div>Content for ACTIVITY tab</div>
             </TabsContent>
           </Tabs>
