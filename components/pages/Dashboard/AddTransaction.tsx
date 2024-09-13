@@ -1,8 +1,5 @@
 import * as React from "react";
 import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
   Badge,
   Dialog,
   DialogContent,
@@ -33,6 +30,7 @@ import { format } from "date-fns";
 import { addExpenseToFirestore } from "@/lib/firestoreService";
 import { getAuth } from "firebase/auth";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { CiCircleQuestion } from "react-icons/ci";
 
 interface AddTransactionProps {
   onSuccess: () => void;
@@ -40,7 +38,7 @@ interface AddTransactionProps {
 
 export default function AddTransaction({ onSuccess }: AddTransactionProps) {
   const [addAmount, setAddAmount] = useState<boolean>(false);
-  const [amount, setAmount] = useState<number | string>(""); // Change type to allow empty string
+  const [amount, setAmount] = useState<number | string>("");
   const [addNote, setAddNote] = useState(false);
   const [noteText, setNoteText] = useState("Write a note ...");
   const [selectedLabel, setSelectedLabel] = useState<string | null>(null);
@@ -50,6 +48,22 @@ export default function AddTransaction({ onSuccess }: AddTransactionProps) {
   const noteRef = useRef<HTMLDivElement | null>(null);
   const amountRef = useRef<HTMLInputElement | null>(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+
+  const [category, setCategory] = useState<string | null>(null);
+  const [categoryIcon, setCategoryIcon] = useState<JSX.Element | null>(null);
+  const [categoryType, setCategoryType] = useState<
+    "expenses" | "income" | null
+  >(null);
+
+  const handleCategorySelect = (
+    category: string,
+    icon: JSX.Element,
+    type: "expenses" | "income"
+  ) => {
+    setCategory(category);
+    setCategoryIcon(icon);
+    setCategoryType(type);
+  };
 
   const handleDrawerClose = () => {
     setIsDrawerOpen(false);
@@ -61,7 +75,6 @@ export default function AddTransaction({ onSuccess }: AddTransactionProps) {
   const handleClickOutside = useCallback(
     (e: MouseEvent) => {
       if (noteRef.current && !noteRef.current.contains(e.target as Node)) {
-        // Check if noteText is empty and reset to default if necessary
         if (noteText.trim() === "") {
           setNoteText("Write a note ...");
         }
@@ -117,14 +130,6 @@ export default function AddTransaction({ onSuccess }: AddTransactionProps) {
       return;
     }
 
-    const expenseLabel = selectedLabel || "No Label";
-    const expenseNote = noteText === "Write a note ..." ? null : noteText;
-
-    if (!selectedLabel) {
-      alert("Please select a label.");
-      return;
-    }
-
     if (date && amount) {
       const amountValue = Number(amount);
       if (isNaN(amountValue) || amountValue <= 0) {
@@ -132,21 +137,34 @@ export default function AddTransaction({ onSuccess }: AddTransactionProps) {
         return;
       }
 
+      const expenseLabel = selectedLabel || "No Label";
+      const expenseNote = noteText === "Write a note ..." ? null : noteText;
+
+      if (!selectedLabel) {
+        alert("Please select a label.");
+        return;
+      }
+
+      if (!category) {
+        alert("Please select a category.");
+        return;
+      }
+
       const items = [
         {
-          icon: "Food",
+          icon: category,
+          type: categoryType || null,
           title: expenseLabel,
           description: expenseNote,
           price: amountValue,
-          imageUrl: "", // Initialize as empty
-          // userId: user.uid,
+          imageUrl: "",
         },
       ];
 
       try {
         if (selectedImage) {
           const uploadedImageUrl = await handleImageSelect(selectedImage);
-          items[0].imageUrl = uploadedImageUrl || ""; // Use the uploaded URL
+          items[0].imageUrl = uploadedImageUrl || "";
         }
 
         await addExpenseToFirestore(format(date, "yyyy-MM-dd"), items);
@@ -175,14 +193,21 @@ export default function AddTransaction({ onSuccess }: AddTransactionProps) {
       <DrawerTrigger onClick={handleDrawerOpen}>
         <IoIosAddCircle color="#4CBB9B" />
       </DrawerTrigger>
-      <DrawerContent className="h-4/6">
+      <DrawerContent className="overflow-y-auto ">
         <DrawerHeader className="px-8 h-48">
           <DrawerTitle className="text-center">Add Transaction</DrawerTitle>
           <div className="flex items-center justify-between">
-            <Avatar>
-              <AvatarImage src="https://github.com/shadcn.png" alt="@shadcn" />
-              <AvatarFallback>CN</AvatarFallback>
-            </Avatar>
+            {category && categoryIcon ? (
+              <div className="flex items-center space-x-5">
+                <div className="w-10 h-10 rounded-full bg-slate-400 flex items-center justify-center">
+                  {categoryIcon}
+                </div>
+                <div>{category}</div>
+              </div>
+            ) : (
+              <CiCircleQuestion size={45} />
+            )}
+
             {addAmount ? (
               <Input
                 ref={amountRef}
@@ -304,10 +329,10 @@ export default function AddTransaction({ onSuccess }: AddTransactionProps) {
           <SelectPhoto onSelectImage={setSelectedImage} />
 
           <div className="mx-auto">
-            <Category />
+            <Category onSelectCategory={handleCategorySelect} />
           </div>
 
-          <div className="flex justify-end">
+          <div className="mx-auto">
             <Button onClick={handleSubmit} className="bg-blue-500 text-white">
               Add Expense
             </Button>

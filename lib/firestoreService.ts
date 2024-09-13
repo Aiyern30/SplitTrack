@@ -4,6 +4,7 @@ import { collection, addDoc, getDocs, query, where } from "firebase/firestore";
 
 interface Item {
   icon: string;
+  type: "expenses" | "income" | null;
   title: string;
   description: string | null;
   price: number;
@@ -28,16 +29,15 @@ const addExpenseToFirestore = async (
   }
 
   try {
-    // Add a new expense document to Firestore for the current authenticated user
     await addDoc(collection(firestore, "ownExpenses"), {
       date,
-      items, // Ensure we're saving items consistently
+      items,
       userId: user.uid,
     });
     console.log("Expense successfully added!");
   } catch (error) {
     console.error("Error adding expense: ", error);
-    throw error; // Rethrow the error if necessary for handling elsewhere
+    throw error;
   }
 };
 
@@ -58,7 +58,7 @@ const fetchExpensesFromFirestore = async (): Promise<DataItem[]> => {
     date: doc.data().date,
     items: doc.data().items.map((item: Item) => ({
       ...item,
-      imageUrl: item.imageUrl || "", // Handle missing imageUrl gracefully
+      imageUrl: item.imageUrl || "",
     })),
   }));
 

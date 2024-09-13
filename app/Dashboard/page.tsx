@@ -5,9 +5,9 @@ import useAuth from "@/lib/useAuth";
 import LogoutButton from "@/components/LogoutButton";
 import DashboardHeader from "@/components/DashboardHeader";
 import {
-  // Avatar,
-  // AvatarFallback,
-  // AvatarImage,
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
   Card,
   Tabs,
   TabsContent,
@@ -16,28 +16,20 @@ import {
 } from "@/components/ui";
 import AddTransaction from "@/components/pages/Dashboard/AddTransaction";
 import { fetchExpensesFromFirestore } from "@/lib/firestoreService";
-
-interface Item {
-  icon: string;
-  title: string;
-  description: string | null;
-  price: number;
-  imageUrl?: string;
-}
-
-interface DataItem {
-  date: string;
-  items: Item[];
-}
+import RenderIcon from "@/components/RenderIcon";
 
 const groupByDate = (data: DataItem[]): Record<string, Item[]> => {
   return data.reduce((acc: Record<string, Item[]>, curr: DataItem) => {
     if (!acc[curr.date]) {
       acc[curr.date] = [];
     }
-    acc[curr.date].push(...curr.items); // Use 'items' instead of 'item'
+    acc[curr.date].push(...curr.items);
     return acc;
   }, {});
+};
+
+const sortDatesDescending = (dates: string[]): string[] => {
+  return dates.sort((a, b) => new Date(b).getTime() - new Date(a).getTime());
 };
 
 const Dashboard = () => {
@@ -83,8 +75,8 @@ const Dashboard = () => {
 
   if (!auth) return null;
 
-  // Group expenses by date
   const groupedData = groupByDate(data);
+  const sortedDates = sortDatesDescending(Object.keys(groupedData));
 
   const chunkItems = (items: Item[]): Item[][] => {
     const result: Item[][] = [];
@@ -95,17 +87,16 @@ const Dashboard = () => {
   };
 
   const calculateTotal = (items: Item[]): number => {
-    return items.reduce((total, item) => total + item.price, 0);
+    return items.reduce((total, item) => {
+      return item.type === "income" ? total + item.price : total - item.price;
+    }, 0);
   };
-
-  const total = data.reduce(
-    (acc, dataItem) => acc + calculateTotal(dataItem.items),
-    0
-  );
 
   return (
     <div>
-      <DashboardHeader total={total} />
+      <DashboardHeader
+        total={data.reduce((acc, { items }) => acc + calculateTotal(items), 0)}
+      />
       <LogoutButton />
       <div className="px-16 py-8">
         <Card className="p-0">
@@ -123,46 +114,75 @@ const Dashboard = () => {
             </div>
 
             <TabsContent value="OWN" className="p-4">
-              {Object.entries(groupedData).map(([date, items], index) => (
-                <div key={index} className="mb-8">
-                  <Card className="mb-4">
-                    <div className="flex justify-between mb-4 bg-[#D9D9D9] px-4 py-2 rounded-t-xl">
-                      <div className="font-semibold text-lg">{date}</div>
-                      <div className="font-bold text-red-500">
-                        Total: {calculateTotal(items)}
+              {sortedDates.map((date, index) => {
+                const items = groupedData[date];
+                return (
+                  <div key={index} className="mb-8">
+                    <Card className="mb-4">
+                      <div className="flex justify-between mb-4 bg-[#D9D9D9] px-4 py-2 rounded-t-xl">
+                        <div className="font-semibold text-lg">{date}</div>
+                        <div
+                          className={`font-bold ${
+                            calculateTotal(items) >= 0
+                              ? "text-green-500"
+                              : "text-red-500"
+                          }`}
+                        >
+                          Total: {calculateTotal(items).toFixed(2)}
+                        </div>
                       </div>
-                    </div>
-                    {chunkItems(items).map((itemPair, pairIndex) => (
-                      <div key={pairIndex} className="px-4 py-2">
-                        {itemPair.map((item, itemIndex) => (
-                          <div
-                            key={itemIndex}
-                            className="flex items-center justify-between mb-4 last:mb-0"
-                          >
-                            <div className="flex items-center">
-                              {item.icon}
-                              <div className="pl-7">
-                                <div className="font-semibold">
-                                  {item.title}
-                                </div>
-                                {item.description && (
-                                  <div className="text-gray-600">
-                                    {item.description}
+                      {chunkItems(items).map((itemPair, pairIndex) => (
+                        <div key={pairIndex} className="px-4 py-2">
+                          {itemPair.map((item, itemIndex) => (
+                            <div
+                              key={itemIndex}
+                              className="flex items-center justify-between mb-4 last:mb-0"
+                            >
+                              <div className="flex items-center space-x-4">
+                                <RenderIcon
+                                  category={item.icon}
+                                  type={item.type}
+                                />
+                                <div className="flex flex-col">
+                                  <div className="font-semibold">
+                                    {item.title}
                                   </div>
+                                  {item.description && (
+                                    <div className="text-gray-600">
+                                      {item.description}
+                                    </div>
+                                  )}
+                                </div>
+                                {item.imageUrl && (
+                                  <Avatar className="w-16 h-16 rounded-full overflow-hidden">
+                                    <AvatarImage
+                                      src={item.imageUrl}
+                                      className="object-cover w-full h-full"
+                                      alt="Transaction Image"
+                                    />
+                                    <AvatarFallback>Image</AvatarFallback>
+                                  </Avatar>
                                 )}
                               </div>
+                              <div
+                                className={`text-right font-bold ${
+                                  item.type === "income"
+                                    ? "text-green-500"
+                                    : "text-red-500"
+                                }`}
+                              >
+                                {item.type === "income"
+                                  ? `+${item.price}`
+                                  : `-${item.price}`}
+                              </div>
                             </div>
-
-                            <div className="text-right font-bold text-red-500">
-                              {item.price}
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    ))}
-                  </Card>
-                </div>
-              ))}
+                          ))}
+                        </div>
+                      ))}
+                    </Card>
+                  </div>
+                );
+              })}
             </TabsContent>
             <TabsContent value="FRIENDS" className="p-4">
               <div>Content for FRIENDS tab</div>

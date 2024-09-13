@@ -1,3 +1,4 @@
+import { useState } from "react";
 import {
   Button,
   Drawer,
@@ -24,32 +25,53 @@ import { TbPerfume } from "react-icons/tb";
 import { CiCircleQuestion } from "react-icons/ci";
 import { AiFillInsurance } from "react-icons/ai";
 import { IoIosSettings } from "react-icons/io";
+import { cn } from "@/lib/utils";
 
-// Create an array of icon objects
 const expensesIcons = [
-  { category: "food", icon: <IoFastFood size={30} /> },
-  { category: "shopping", icon: <FaShoppingCart size={30} /> },
-  { category: "travel", icon: <MdFlight size={30} /> },
-  { category: "entertainment", icon: <FaMaskFace size={30} /> },
-  { category: "health", icon: <MdHealthAndSafety size={30} /> },
-  { category: "parking", icon: <FaParking size={30} /> },
-  { category: "bills", icon: <GiBank size={30} /> },
-  { category: "tol", icon: <FaAddressCard size={30} /> },
-  { category: "beauty", icon: <TbPerfume size={30} /> },
-  { category: "game", icon: <IoGameController size={30} /> },
+  { category: "food", icon: <IoFastFood size={30} type="expenses" /> },
+  { category: "shopping", icon: <FaShoppingCart size={30} type="expenses" /> },
+  { category: "travel", icon: <MdFlight size={30} type="expenses" /> },
+  { category: "entertainment", icon: <FaMaskFace size={30} type="expenses" /> },
+  { category: "health", icon: <MdHealthAndSafety size={30} type="expenses" /> },
+  { category: "parking", icon: <FaParking size={30} type="expenses" /> },
+  { category: "bills", icon: <GiBank size={30} type="expenses" /> },
+  { category: "tol", icon: <FaAddressCard size={30} type="expenses" /> },
+  { category: "beauty", icon: <TbPerfume size={30} type="expenses" /> },
+  { category: "game", icon: <IoGameController size={30} type="expenses" /> },
 ];
 
-const IncomeIcons = [
-  { category: "salary", icon: <FaMoneyCheckDollar size={30} /> },
-  { category: "business", icon: <MdBusinessCenter size={30} /> },
-  { category: "gifts", icon: <FaGift size={30} /> },
-  { category: "extra income", icon: <GiBank size={30} /> },
-  { category: "insurance", icon: <AiFillInsurance size={30} /> },
-  { category: "other", icon: <CiCircleQuestion size={30} /> },
-  { category: "game", icon: <IoGameController size={30} /> },
+const incomeIcons = [
+  { category: "salary", icon: <FaMoneyCheckDollar size={30} type="income" /> },
+  { category: "business", icon: <MdBusinessCenter size={30} type="income" /> },
+  { category: "gifts", icon: <FaGift size={30} type="income" /> },
+  { category: "extra income", icon: <GiBank size={30} type="income" /> },
+  { category: "insurance", icon: <AiFillInsurance size={30} type="income" /> },
+  { category: "other", icon: <CiCircleQuestion size={30} type="income" /> },
+  { category: "game", icon: <IoGameController size={30} type="income" /> },
 ];
 
-export default function Category() {
+interface CategoryProps {
+  onSelectCategory: (
+    category: string,
+    icon: JSX.Element,
+    type: "expenses" | "income"
+  ) => void;
+}
+
+export default function Category({ onSelectCategory }: CategoryProps) {
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+
+  const handleSelectIcon = (
+    category: string,
+    icon: JSX.Element,
+    type: "expenses" | "income"
+  ) => {
+    setSelectedCategory(category);
+    if (onSelectCategory) {
+      onSelectCategory(category, icon, type);
+    }
+  };
+
   return (
     <Drawer>
       <DrawerTrigger>
@@ -76,9 +98,18 @@ export default function Category() {
               {expensesIcons.map((item, index) => (
                 <div
                   key={index}
-                  className="flex  items-center justify-center p-4 cursor-pointer rounded-xl"
+                  className="flex items-center justify-center p-4 cursor-pointer rounded-xl"
+                  onClick={() =>
+                    handleSelectIcon(item.category, item.icon, "expenses")
+                  }
                 >
-                  <div className="flex flex-col items-center">
+                  <div
+                    className={cn(
+                      "flex flex-col items-center",
+                      "rounded-xl hover:bg-slate-400 p-4",
+                      selectedCategory === item.category && "bg-slate-400"
+                    )}
+                  >
                     {item.icon}
                     {item.category}
                   </div>
@@ -88,12 +119,21 @@ export default function Category() {
           </TabsContent>
           <TabsContent value="Income">
             <div className="flex flex-wrap justify-center gap-4">
-              {IncomeIcons.map((item, index) => (
+              {incomeIcons.map((item, index) => (
                 <div
                   key={index}
                   className="flex items-center justify-center p-4 cursor-pointer rounded-xl"
+                  onClick={() =>
+                    handleSelectIcon(item.category, item.icon, "income")
+                  }
                 >
-                  <div className="flex flex-col items-center">
+                  <div
+                    className={cn(
+                      "flex flex-col items-center",
+                      "rounded-xl hover:bg-slate-400 p-4",
+                      selectedCategory === item.category && "bg-slate-400"
+                    )}
+                  >
                     {item.icon}
                     {item.category}
                   </div>
