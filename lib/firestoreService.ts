@@ -9,11 +9,12 @@ interface Item {
   description: string | null;
   price: number;
   imageUrl?: string;
+  to: string;
 }
 
 interface DataItem {
   date: string;
-  items: Item[]; // Use 'items' consistently instead of 'item'
+  items: Item[];
 }
 
 const addExpenseToFirestore = async (

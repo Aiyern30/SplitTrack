@@ -5,6 +5,7 @@ interface Item {
   description: string | null;
   price: number;
   imageUrl?: string;
+  to: string;
 }
 
 interface DataItem {

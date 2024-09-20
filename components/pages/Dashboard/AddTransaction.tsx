@@ -158,6 +158,7 @@ export default function AddTransaction({ onSuccess }: AddTransactionProps) {
           description: expenseNote,
           price: amountValue,
           imageUrl: "",
+          to: user.uid,
         },
       ];
 
