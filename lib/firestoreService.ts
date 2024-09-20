@@ -66,4 +66,39 @@ const fetchExpensesFromFirestore = async (): Promise<DataItem[]> => {
   return expenses;
 };
 
-export { addExpenseToFirestore, fetchExpensesFromFirestore };
+const fetchExpensesWithFriends = async (): Promise<DataItem[]> => {
+  const { firestore } = initializeFirebase();
+  const auth = getAuth();
+  const user = auth.currentUser;
+
+  if (!user) {
+    throw new Error("User not authenticated");
+  }
+
+  const userId = user.uid; // Current logged-in user
+  const expensesCollection = collection(firestore, "ownExpenses");
+
+  // Query for expenses where the current user created the expense
+  const q = query(expensesCollection, where("userId", "==", userId));
+
+  const expenseDocs = await getDocs(q);
+  console.log("Fetched documents:", expenseDocs.docs.length); // Check how many documents were fetched
+
+  const expensesWithFriends: DataItem[] = expenseDocs.docs
+    .map((doc) => {
+      const data = doc.data();
+      return {
+        date: data.date,
+        items: data.items.filter((item: Item) => item.to !== userId), // Keep only items where the recipient is a friend
+      };
+    })
+    .filter((expense) => expense.items.length > 0); // Remove expenses with no relevant items
+
+  return expensesWithFriends;
+};
+
+export {
+  addExpenseToFirestore,
+  fetchExpensesFromFirestore,
+  fetchExpensesWithFriends,
+};

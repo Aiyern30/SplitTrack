@@ -15,6 +15,8 @@ const FriendTabContent: React.FC<friendTabContentProps> = ({
   sortedDates,
   onTotalChange,
 }) => {
+  console.log("groupedData", groupedData);
+  console.log("sortedDates", sortedDates);
   const chunkItems = (items: Item[]): Item[][] => {
     const result: Item[][] = [];
     for (let i = 0; i < items.length; i += 2) {
