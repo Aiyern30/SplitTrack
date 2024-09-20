@@ -194,7 +194,7 @@ export default function AddTransaction({ onSuccess }: AddTransactionProps) {
         <IoIosAddCircle color="#4CBB9B" />
       </DrawerTrigger>
       <DrawerContent className="overflow-y-auto ">
-        <DrawerHeader className="px-8 h-48">
+        <DrawerHeader className="px-8 h-36">
           <DrawerTitle className="text-center">Add Transaction</DrawerTitle>
           <div className="flex items-center justify-between">
             {category && categoryIcon ? (
@@ -227,7 +227,7 @@ export default function AddTransaction({ onSuccess }: AddTransactionProps) {
             )}
           </div>
         </DrawerHeader>
-        <div className="p-4 bg-white h-full flex flex-col space-y-5 text-black">
+        <div className="p-4 bg-white h-full flex flex-col space-y-2 sm:space-y-5 text-black">
           <Popover>
             <PopoverTrigger asChild>
               <div className="flex justify-between hover:bg-slate-200 cursor-pointer px-4 py-2 items-center rounded-xl">
