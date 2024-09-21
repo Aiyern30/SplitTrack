@@ -6,6 +6,11 @@ import LogoutButton from "@/components/LogoutButton";
 import DashboardHeader from "@/components/DashboardHeader";
 import {
   Card,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
   Tabs,
   TabsContent,
   TabsList,
@@ -36,27 +41,22 @@ const sortDatesDescending = (dates: string[]): string[] => {
 const Dashboard = () => {
   const { auth, loading } = useAuth();
   const [ownData, setOwnData] = useState<DataItem[]>([]);
-  const [friendData, setFriendData] = useState<DataItem[]>([]); // New state for friend expenses
+  const [friendData, setFriendData] = useState<DataItem[]>([]);
   const [loadingData, setLoadingData] = useState(true);
-  const [drawerClose] = useState(false);
-  const [activeTab, setActiveTab] = useState("OWN"); // State for active tab
-
+  const [activeTab, setActiveTab] = useState("OWN");
   const [total, setTotal] = useState(0);
-  const [friendTotal, setFriendTotal] = useState(0); // New state for friend total
+  const [friendTotal, setFriendTotal] = useState(0);
+  const [selectedUserId, setSelectedUserId] = useState<string | null>(null); // State for selected user ID
 
   useEffect(() => {
     const loadData = async () => {
       try {
         if (auth) {
-          // Fetch own expenses
           const expenses = await fetchExpensesFromFirestore();
           setOwnData(expenses);
 
-          // Fetch expenses with friends
           const friendExpenses = await fetchExpensesWithFriends();
           setFriendData(friendExpenses);
-        } else {
-          console.error("User not authenticated");
         }
       } catch (error) {
         console.error("Error fetching data: ", error);
@@ -66,7 +66,7 @@ const Dashboard = () => {
     };
 
     loadData();
-  }, [auth, drawerClose]);
+  }, [auth]);
 
   const refreshData = async () => {
     setLoadingData(true);
@@ -74,8 +74,7 @@ const Dashboard = () => {
       if (auth) {
         const expenses = await fetchExpensesFromFirestore();
         setOwnData(expenses);
-
-        const friendExpenses = await fetchExpensesWithFriends(); // Refresh friend expenses as well
+        const friendExpenses = await fetchExpensesWithFriends();
         setFriendData(friendExpenses);
       }
     } catch (error) {
@@ -91,10 +90,15 @@ const Dashboard = () => {
   const groupedOwnData = groupByDate(ownData);
   const sortedOwnDates = sortDatesDescending(Object.keys(groupedOwnData));
 
-  const groupedFriendData = groupByDate(friendData); // Group friend data
-  const sortedFriendDates = sortDatesDescending(Object.keys(groupedFriendData)); // Sort friend data dates
-  console.log("groupedFriendData", groupedFriendData);
-  const currentTotal = activeTab === "OWN" ? total : friendTotal; // Determine which total to use
+  const groupedFriendData = groupByDate(friendData);
+  const sortedFriendDates = sortDatesDescending(Object.keys(groupedFriendData));
+  const currentTotal = activeTab === "OWN" ? total : friendTotal;
+
+  // Extract unique user IDs from friend data
+  const userIds = friendData
+    .map((item) => item.items[0].to)
+    .filter((id, i, self) => self.indexOf(id) === i);
+  console.log("userIds", userIds);
 
   return (
     <div>
@@ -105,7 +109,7 @@ const Dashboard = () => {
           <Tabs
             defaultValue="OWN"
             className="w-full"
-            onValueChange={setActiveTab} // Update active tab on change
+            onValueChange={setActiveTab}
           >
             <div className="flex flex-col sm:flex-row items-center p-4">
               <TabsList className="mx-auto">
@@ -118,23 +122,35 @@ const Dashboard = () => {
                 <AddTransaction onSuccess={refreshData} />
               </div>
             </div>
+            {activeTab === "FRIENDS" && (
+              <div className="flex justify-end pr-12">
+                <Select onValueChange={(value) => setSelectedUserId(value)}>
+                  <SelectTrigger className="w-[180px]">
+                    <SelectValue placeholder="Select User" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {userIds.map((userId) => (
+                      <SelectItem key={userId} value={userId}>
+                        {userId}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
 
             <TabsContent value="OWN" className="p-4">
               <OwnTabContent
-                groupedData={groupByDate(ownData)}
-                sortedDates={sortDatesDescending(
-                  Object.keys(groupByDate(ownData))
-                )}
+                groupedData={groupedOwnData}
+                sortedDates={sortedOwnDates}
                 onTotalChange={(newTotal) => setTotal(newTotal)}
               />
             </TabsContent>
 
             <TabsContent value="FRIENDS" className="p-4">
               <FriendTabContent
-                groupedData={groupByDate(friendData)}
-                sortedDates={sortDatesDescending(
-                  Object.keys(groupByDate(friendData))
-                )}
+                groupedData={groupedFriendData}
+                sortedDates={sortedFriendDates}
                 onTotalChange={(newTotal) => setFriendTotal(newTotal)}
               />
             </TabsContent>

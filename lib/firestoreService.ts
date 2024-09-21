@@ -1,6 +1,15 @@
 import { initializeFirebase } from "@/lib/firebase";
 import { getAuth } from "firebase/auth";
-import { collection, addDoc, getDocs, query, where } from "firebase/firestore";
+import {
+  collection,
+  addDoc,
+  getDocs,
+  query,
+  where,
+  doc,
+  setDoc,
+  getDoc,
+} from "firebase/firestore";
 
 interface Item {
   icon: string;
@@ -16,6 +25,33 @@ interface DataItem {
   date: string;
   items: Item[];
 }
+
+interface User {
+  uid: string;
+  displayName?: string;
+  email?: string;
+  photoURL?: string;
+}
+
+const createUserProfile = async (user: User) => {
+  const { firestore } = initializeFirebase();
+  console.log("firestore", firestore);
+
+  const userRef = doc(firestore, "users", user.uid);
+  console.log("userRef", userRef);
+
+  // Check if the user document already exists
+  const docSnapshot = await getDoc(userRef);
+  if (!docSnapshot.exists()) {
+    // Create a new user document if it doesn't exist
+    await setDoc(userRef, {
+      uid: user.uid,
+      displayName: user.displayName || null, // Allow null if no name is provided
+      email: user.email || null, // Allow null if no email is provided
+      photoURL: user.photoURL || null, // Include imageUrl if available
+    });
+  }
+};
 
 const addExpenseToFirestore = async (
   date: string,
@@ -101,4 +137,5 @@ export {
   addExpenseToFirestore,
   fetchExpensesFromFirestore,
   fetchExpensesWithFriends,
+  createUserProfile,
 };
