@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import useAuth from "@/lib/useAuth";
 import LogoutButton from "@/components/LogoutButton";
 import DashboardHeader from "@/components/DashboardHeader";
@@ -23,6 +23,7 @@ import {
 } from "@/lib/firestoreService";
 import OwnTabContent from "@/components/pages/Dashboard/ownTabContent";
 import FriendTabContent from "@/components/pages/Dashboard/friendTabContent";
+import { fetchUserNames } from "@/lib/firestoreService"; // Import fetchUserNames
 
 const groupByDate = (data: DataItem[]): Record<string, Item[]> => {
   return data.reduce((acc: Record<string, Item[]>, curr: DataItem) => {
@@ -47,7 +48,13 @@ const Dashboard = () => {
   const [total, setTotal] = useState(0);
   const [friendTotal, setFriendTotal] = useState(0);
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null); // State for selected user ID
-
+  console.log("selectedUserId", selectedUserId);
+  const [userNames, setUserNames] = useState<{ [key: string]: string }>({}); // State for user names
+  const handleSelectChange = (value: string) => {
+    setSelectedUserId(value);
+    // You can also perform additional actions when a user is selected
+    // For example, fetching specific data related to the selected user
+  };
   useEffect(() => {
     const loadData = async () => {
       try {
@@ -84,6 +91,37 @@ const Dashboard = () => {
     }
   };
 
+  // Memoize userIds to avoid unnecessary recalculation and re-rendering
+  const userIds = useMemo(
+    () =>
+      friendData
+        .map((item) => item.items[0]?.to)
+        .filter((id, i, self) => id && self.indexOf(id) === i), // Ensure valid ids
+    [friendData]
+  );
+
+  // Fetch user names based on userIds
+  useEffect(() => {
+    const loadUserNames = async () => {
+      if (userIds.length > 0) {
+        try {
+          const names = await fetchUserNames(userIds);
+          const sanitizedNames = Object.fromEntries(
+            Object.entries(names).map(([id, name]) => [
+              id,
+              name || "Unknown User",
+            ]) // Fallback if name is missing
+          );
+          setUserNames(sanitizedNames);
+        } catch (error) {
+          console.error("Error fetching user names: ", error);
+        }
+      }
+    };
+
+    loadUserNames();
+  }, [userIds]); // Only run when userIds change
+
   if (loading || loadingData) return <div>Loading...</div>;
   if (!auth) return null;
 
@@ -93,12 +131,6 @@ const Dashboard = () => {
   const groupedFriendData = groupByDate(friendData);
   const sortedFriendDates = sortDatesDescending(Object.keys(groupedFriendData));
   const currentTotal = activeTab === "OWN" ? total : friendTotal;
-
-  // Extract unique user IDs from friend data
-  const userIds = friendData
-    .map((item) => item.items[0].to)
-    .filter((id, i, self) => self.indexOf(id) === i);
-  console.log("userIds", userIds);
 
   return (
     <div>
@@ -124,14 +156,15 @@ const Dashboard = () => {
             </div>
             {activeTab === "FRIENDS" && (
               <div className="flex justify-end pr-12">
-                <Select onValueChange={(value) => setSelectedUserId(value)}>
+                <Select onValueChange={handleSelectChange}>
                   <SelectTrigger className="w-[180px]">
                     <SelectValue placeholder="Select User" />
                   </SelectTrigger>
                   <SelectContent>
                     {userIds.map((userId) => (
                       <SelectItem key={userId} value={userId}>
-                        {userId}
+                        {userNames[userId] || "Unknown User"}
+                        {/* Display name or fallback */}
                       </SelectItem>
                     ))}
                   </SelectContent>

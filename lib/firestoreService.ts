@@ -53,6 +53,27 @@ const createUserProfile = async (user: User) => {
   }
 };
 
+const fetchUserNames = async (userIds: string[]) => {
+  const { firestore } = initializeFirebase();
+
+  const userRefs = userIds.map((id) => doc(firestore, "users", id));
+
+  const userSnapshots = await Promise.all(userRefs.map((ref) => getDoc(ref)));
+
+  const userNames: { [key: string]: string | null } = {};
+
+  userSnapshots.forEach((snapshot) => {
+    if (snapshot.exists()) {
+      const data = snapshot.data();
+      userNames[data.uid] = data.displayName || "Anonymous";
+    } else {
+      userNames[snapshot.id] = "Unknown";
+    }
+  });
+
+  return userNames;
+};
+
 const addExpenseToFirestore = async (
   date: string,
   items: Item[]
@@ -138,4 +159,5 @@ export {
   fetchExpensesFromFirestore,
   fetchExpensesWithFriends,
   createUserProfile,
+  fetchUserNames,
 };
