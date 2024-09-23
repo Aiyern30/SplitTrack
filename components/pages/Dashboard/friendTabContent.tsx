@@ -1,21 +1,26 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Card, Avatar, AvatarFallback, AvatarImage } from "@/components/ui";
 import RenderIcon from "@/components/RenderIcon";
+import { fetchUserNames } from "@/lib/firestoreService";
 
 interface friendTabContentProps {
   groupedData: Record<string, Item[]>;
   sortedDates: string[];
   onTotalChange: (total: number) => void;
+  currentUserId: string; // New prop for current user's ID
 }
 
 const FriendTabContent: React.FC<friendTabContentProps> = ({
   groupedData,
   sortedDates,
   onTotalChange,
+  currentUserId, // Destructure the new prop
 }) => {
   console.log("groupedData", groupedData);
+  const [userNames, setUserNames] = useState<{ [key: string]: string }>({});
+
   const chunkItems = (items: Item[]): Item[][] => {
     const result: Item[][] = [];
     for (let i = 0; i < items.length; i += 2) {
@@ -30,15 +35,39 @@ const FriendTabContent: React.FC<friendTabContentProps> = ({
     }, 0);
   };
 
-  // Calculate total for all OWN items and pass it to the parent
   const total = sortedDates.reduce((acc, date) => {
     return acc + calculateTotal(groupedData[date]);
   }, 0);
 
-  // Call the onTotalChange function to pass the total to DashboardHeader
-  React.useEffect(() => {
+  useEffect(() => {
     onTotalChange(total);
   }, [total, onTotalChange]);
+
+  useEffect(() => {
+    const loadUserNames = async () => {
+      const userIds = new Set<string>();
+      sortedDates.forEach((date) => {
+        groupedData[date].forEach((item) => {
+          if (item.to) userIds.add(item.to);
+        });
+      });
+
+      if (userIds.size > 0) {
+        const names = await fetchUserNames(Array.from(userIds));
+
+        const filteredNames: { [key: string]: string } = {};
+        for (const [key, value] of Object.entries(names)) {
+          if (value) {
+            filteredNames[key] = value;
+          }
+        }
+
+        setUserNames(filteredNames);
+      }
+    };
+
+    loadUserNames();
+  }, [groupedData, sortedDates]);
 
   return (
     <>
@@ -86,7 +115,12 @@ const FriendTabContent: React.FC<friendTabContentProps> = ({
                           </Avatar>
                         )}
                       </div>
-                      <div className="text-center">{item.to}</div>
+                      <div className="text-center">
+                        {currentUserId === item.to
+                          ? `You owe ${userNames[item.to] || "Unknown User"}`
+                          : `${userNames[item.to] || "Unknown User"} owes you`}
+                      </div>
+
                       <div
                         className={`text-right font-bold ${
                           item.type === "income"

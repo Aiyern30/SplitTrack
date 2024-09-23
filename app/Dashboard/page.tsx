@@ -41,6 +41,8 @@ const sortDatesDescending = (dates: string[]): string[] => {
 
 const Dashboard = () => {
   const { auth, loading } = useAuth();
+  const currentUserId = auth?.currentUser?.uid || "";
+
   const [ownData, setOwnData] = useState<DataItem[]>([]);
   const [friendData, setFriendData] = useState<DataItem[]>([]);
   const [loadingData, setLoadingData] = useState(true);
@@ -52,8 +54,6 @@ const Dashboard = () => {
   const [userNames, setUserNames] = useState<{ [key: string]: string }>({}); // State for user names
   const handleSelectChange = (value: string) => {
     setSelectedUserId(value);
-    // You can also perform additional actions when a user is selected
-    // For example, fetching specific data related to the selected user
   };
   useEffect(() => {
     const loadData = async () => {
@@ -185,6 +185,7 @@ const Dashboard = () => {
                 groupedData={groupedFriendData}
                 sortedDates={sortedFriendDates}
                 onTotalChange={(newTotal) => setFriendTotal(newTotal)}
+                currentUserId={currentUserId}
               />
             </TabsContent>
 
