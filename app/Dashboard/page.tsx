@@ -122,7 +122,15 @@ const Dashboard = () => {
     loadUserNames();
   }, [userIds]); // Only run when userIds change
 
-  if (loading || loadingData) return <div>Loading...</div>;
+  if (loading || loadingData)
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading your dashboard...</p>
+        </div>
+      </div>
+    );
   if (!auth) return null;
 
   const groupedOwnData = groupByDate(ownData);
@@ -133,30 +141,56 @@ const Dashboard = () => {
   const currentTotal = activeTab === "OWN" ? total : friendTotal;
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <DashboardHeader total={currentTotal} />
-      <LogoutButton />
-      <div className="px-4 sm:px-8 lg:px-16 py-4 sm:py-8">
-        <Card className="p-0 shadow-lg">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+      <div className="pt-4 sm:pt-6">
+        <DashboardHeader total={currentTotal} />
+      </div>
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+        <div className="flex justify-between items-center mb-6">
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
+              Dashboard
+            </h1>
+            <p className="text-sm text-gray-600 mt-1">
+              Track your expenses and split bills with friends
+            </p>
+          </div>
+          <LogoutButton />
+        </div>
+
+        <Card className="border-0 shadow-xl bg-white/95 backdrop-blur overflow-hidden">
           <Tabs
             defaultValue="OWN"
             className="w-full"
             onValueChange={setActiveTab}
           >
-            <div className="flex flex-col gap-4 p-4 border-b">
+            <div className="bg-gradient-to-r from-indigo-500 to-purple-600 px-4 sm:px-6 py-4">
               <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-                <TabsList className="w-full sm:w-auto grid grid-cols-4 sm:flex">
-                  <TabsTrigger value="OWN" className="text-xs sm:text-sm">
-                    OWN
+                <TabsList className="w-full sm:w-auto bg-white/20 backdrop-blur-sm border border-white/30 p-1 rounded-xl grid grid-cols-4 gap-1">
+                  <TabsTrigger
+                    value="OWN"
+                    className="text-xs sm:text-sm font-medium data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-md text-white rounded-lg transition-all"
+                  >
+                    Own
                   </TabsTrigger>
-                  <TabsTrigger value="FRIENDS" className="text-xs sm:text-sm">
-                    FRIENDS
+                  <TabsTrigger
+                    value="FRIENDS"
+                    className="text-xs sm:text-sm font-medium data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-md text-white rounded-lg transition-all"
+                  >
+                    Friends
                   </TabsTrigger>
-                  <TabsTrigger value="GROUPS" className="text-xs sm:text-sm">
-                    GROUPS
+                  <TabsTrigger
+                    value="GROUPS"
+                    className="text-xs sm:text-sm font-medium data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-md text-white rounded-lg transition-all"
+                  >
+                    Groups
                   </TabsTrigger>
-                  <TabsTrigger value="ACTIVITY" className="text-xs sm:text-sm">
-                    ACTIVITY
+                  <TabsTrigger
+                    value="ACTIVITY"
+                    className="text-xs sm:text-sm font-medium data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-md text-white rounded-lg transition-all"
+                  >
+                    Activity
                   </TabsTrigger>
                 </TabsList>
                 <div className="flex justify-center sm:justify-end">
@@ -164,12 +198,13 @@ const Dashboard = () => {
                 </div>
               </div>
               {activeTab === "FRIENDS" && (
-                <div className="flex justify-center sm:justify-end">
+                <div className="mt-4 flex justify-center sm:justify-end">
                   <Select onValueChange={handleSelectChange}>
-                    <SelectTrigger className="w-full sm:w-[200px]">
-                      <SelectValue placeholder="Select User" />
+                    <SelectTrigger className="w-full sm:w-[220px] bg-white/95 backdrop-blur border-white/50 focus:ring-2 focus:ring-white/50">
+                      <SelectValue placeholder="Filter by friend" />
                     </SelectTrigger>
                     <SelectContent>
+                      <SelectItem value="all">All Friends</SelectItem>
                       {userIds.map((userId) => (
                         <SelectItem key={userId} value={userId}>
                           {userNames[userId] || "Unknown User"}
@@ -181,32 +216,68 @@ const Dashboard = () => {
               )}
             </div>
 
-            <TabsContent value="OWN" className="p-4 mt-0">
-              <OwnTabContent
-                groupedData={groupedOwnData}
-                sortedDates={sortedOwnDates}
-                onTotalChange={(newTotal) => setTotal(newTotal)}
-              />
+            <TabsContent value="OWN" className="p-4 sm:p-6 mt-0">
+              {sortedOwnDates.length === 0 ? (
+                <div className="text-center py-16">
+                  <div className="text-gray-400 text-5xl mb-4">📊</div>
+                  <h3 className="text-lg font-semibold text-gray-700 mb-2">
+                    No transactions yet
+                  </h3>
+                  <p className="text-gray-500 text-sm">
+                    Start by adding your first transaction
+                  </p>
+                </div>
+              ) : (
+                <OwnTabContent
+                  groupedData={groupedOwnData}
+                  sortedDates={sortedOwnDates}
+                  onTotalChange={(newTotal) => setTotal(newTotal)}
+                />
+              )}
             </TabsContent>
 
-            <TabsContent value="FRIENDS" className="p-4 mt-0">
-              <FriendTabContent
-                groupedData={groupedFriendData}
-                sortedDates={sortedFriendDates}
-                onTotalChange={(newTotal) => setFriendTotal(newTotal)}
-                currentUserId={currentUserId}
-              />
+            <TabsContent value="FRIENDS" className="p-4 sm:p-6 mt-0">
+              {sortedFriendDates.length === 0 ? (
+                <div className="text-center py-16">
+                  <div className="text-gray-400 text-5xl mb-4">👥</div>
+                  <h3 className="text-lg font-semibold text-gray-700 mb-2">
+                    No friend transactions
+                  </h3>
+                  <p className="text-gray-500 text-sm">
+                    Split bills with friends to see them here
+                  </p>
+                </div>
+              ) : (
+                <FriendTabContent
+                  groupedData={groupedFriendData}
+                  sortedDates={sortedFriendDates}
+                  onTotalChange={(newTotal) => setFriendTotal(newTotal)}
+                  currentUserId={currentUserId}
+                />
+              )}
             </TabsContent>
 
-            <TabsContent value="GROUPS" className="p-4 mt-0">
-              <div className="text-center text-gray-500 py-8">
-                Content for GROUPS tab
+            <TabsContent value="GROUPS" className="p-4 sm:p-6 mt-0">
+              <div className="text-center py-16">
+                <div className="text-gray-400 text-5xl mb-4">👨‍👩‍👧‍👦</div>
+                <h3 className="text-lg font-semibold text-gray-700 mb-2">
+                  Groups coming soon
+                </h3>
+                <p className="text-gray-500 text-sm">
+                  Split expenses with multiple people at once
+                </p>
               </div>
             </TabsContent>
 
-            <TabsContent value="ACTIVITY" className="p-4 mt-0">
-              <div className="text-center text-gray-500 py-8">
-                Content for ACTIVITY tab
+            <TabsContent value="ACTIVITY" className="p-4 sm:p-6 mt-0">
+              <div className="text-center py-16">
+                <div className="text-gray-400 text-5xl mb-4">📈</div>
+                <h3 className="text-lg font-semibold text-gray-700 mb-2">
+                  Activity feed coming soon
+                </h3>
+                <p className="text-gray-500 text-sm">
+                  Track all your transaction history here
+                </p>
               </div>
             </TabsContent>
           </Tabs>

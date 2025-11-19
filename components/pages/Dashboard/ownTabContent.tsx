@@ -40,69 +40,106 @@ const OwnTabContent: React.FC<OwnTabContentProps> = ({
   }, [total, onTotalChange]);
 
   return (
-    <>
+    <div className="space-y-6">
       {sortedDates.map((date, index) => {
         const items = groupedData[date];
+        const dayTotal = calculateTotal(items);
+
         return (
-          <div key={index} className="mb-6">
-            <Card className="mb-4 overflow-hidden">
-              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 bg-[#D9D9D9] px-4 py-3 rounded-t-xl">
-                <div className="font-semibold text-base sm:text-lg">{date}</div>
-                <div
-                  className={`font-bold text-sm sm:text-base ${
-                    calculateTotal(items) >= 0
-                      ? "text-green-500"
-                      : "text-red-500"
-                  }`}
-                >
-                  Total: {calculateTotal(items).toFixed(2)}
+          <div key={index} className="group">
+            <Card className="border border-gray-200 shadow-md hover:shadow-lg transition-all duration-300 overflow-hidden bg-white">
+              {/* Date Header */}
+              <div className="bg-gradient-to-r from-indigo-50 to-purple-50 border-b border-gray-200">
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 px-4 sm:px-6 py-3">
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 rounded-full bg-indigo-500"></div>
+                    <h3 className="font-semibold text-base sm:text-lg text-gray-800">
+                      {date}
+                    </h3>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs sm:text-sm text-gray-600 font-medium">
+                      Day Total:
+                    </span>
+                    <span
+                      className={`font-bold text-base sm:text-lg px-3 py-1 rounded-full ${
+                        dayTotal >= 0
+                          ? "bg-green-100 text-green-700"
+                          : "bg-red-100 text-red-700"
+                      }`}
+                    >
+                      ${Math.abs(dayTotal).toFixed(2)}
+                    </span>
+                  </div>
                 </div>
               </div>
+
+              {/* Transaction Items */}
               <div className="divide-y divide-gray-100">
                 {items.map((item, itemIndex) => (
                   <div
                     key={itemIndex}
-                    className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 hover:bg-gray-50 transition-colors"
+                    className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 sm:p-5 hover:bg-gradient-to-r hover:from-indigo-50/50 hover:to-purple-50/50 transition-all duration-200"
                   >
-                    <div className="flex items-start sm:items-center gap-3 flex-1 min-w-0">
-                      <div className="flex-shrink-0">
-                        <RenderIcon category={item.icon} type={item.type} />
+                    {/* Left Section: Icon + Details */}
+                    <div className="flex items-start sm:items-center gap-3 sm:gap-4 flex-1 min-w-0">
+                      <div className="flex-shrink-0 mt-1 sm:mt-0">
+                        <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl bg-gradient-to-br from-indigo-100 to-purple-100 flex items-center justify-center shadow-sm">
+                          <RenderIcon category={item.icon} type={item.type} />
+                        </div>
                       </div>
+
                       <div className="flex flex-col min-w-0 flex-1">
-                        <div className="font-semibold text-sm sm:text-base truncate">
+                        <div className="font-semibold text-sm sm:text-base text-gray-900 truncate">
                           {item.title}
                         </div>
                         {item.description && (
-                          <div className="text-gray-600 text-xs sm:text-sm line-clamp-2">
+                          <div className="text-gray-600 text-xs sm:text-sm mt-0.5 line-clamp-2">
                             {item.description}
                           </div>
                         )}
+                        <div className="flex items-center gap-2 mt-1">
+                          <span
+                            className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
+                              item.type === "income"
+                                ? "bg-green-100 text-green-800"
+                                : "bg-red-100 text-red-800"
+                            }`}
+                          >
+                            {item.type === "income" ? "Income" : "Expense"}
+                          </span>
+                        </div>
                       </div>
+
+                      {/* Image */}
                       {item.imageUrl && (
-                        <div className="flex-shrink-0">
-                          <Avatar className="w-14 h-14 sm:w-16 sm:h-16 rounded-lg overflow-hidden border-2 border-gray-200">
+                        <div className="flex-shrink-0 ml-auto sm:ml-0">
+                          <Avatar className="w-16 h-16 sm:w-20 sm:h-20 rounded-xl overflow-hidden border-2 border-indigo-100 shadow-md hover:scale-105 transition-transform duration-200">
                             <AvatarImage
                               src={item.imageUrl}
                               alt="Transaction"
                               className="object-cover"
                             />
-                            <AvatarFallback className="bg-gray-100">
+                            <AvatarFallback className="bg-gradient-to-br from-indigo-100 to-purple-100 text-indigo-600 font-semibold">
                               IMG
                             </AvatarFallback>
                           </Avatar>
                         </div>
                       )}
                     </div>
-                    <div
-                      className={`text-right font-bold text-base sm:text-lg flex-shrink-0 ${
-                        item.type === "income"
-                          ? "text-green-500"
-                          : "text-red-500"
-                      }`}
-                    >
-                      {item.type === "income"
-                        ? `+${item.price}`
-                        : `-${item.price}`}
+
+                    {/* Right Section: Amount */}
+                    <div className="flex items-center justify-end sm:justify-start">
+                      <div
+                        className={`text-right font-bold text-lg sm:text-xl flex-shrink-0 px-4 py-2 rounded-lg ${
+                          item.type === "income"
+                            ? "text-green-600 bg-green-50"
+                            : "text-red-600 bg-red-50"
+                        }`}
+                      >
+                        {item.type === "income" ? "+" : "-"}$
+                        {item.price.toFixed(2)}
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -111,7 +148,7 @@ const OwnTabContent: React.FC<OwnTabContentProps> = ({
           </div>
         );
       })}
-    </>
+    </div>
   );
 };
 
