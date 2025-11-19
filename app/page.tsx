@@ -2,11 +2,26 @@
 
 import Header from "@/components/Header";
 import FeaturesDetails from "@/components/pages/Dashboard/FeaturesDetails";
-import Login from "@/components/pages/Login";
 import { ArrowRight, CheckCircle } from "lucide-react";
-import Image from "next/image";
+import { getAuth, signInWithPopup, GoogleAuthProvider } from "firebase/auth";
+import { useRouter } from "next/navigation";
 
 export default function Home() {
+  const router = useRouter();
+
+  const handleGoogleLogin = async () => {
+    const auth = getAuth();
+    const provider = new GoogleAuthProvider();
+
+    try {
+      await signInWithPopup(auth, provider);
+      router.push("/Dashboard");
+    } catch (error) {
+      console.error("Error signing in with Google: ", error);
+      alert("Failed to sign in. Please try again.");
+    }
+  };
+
   return (
     <div className="flex flex-col min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
       <Header />
@@ -35,7 +50,8 @@ export default function Home() {
 
                 <p className="text-lg sm:text-xl text-gray-600 leading-relaxed">
                   Track personal expenses, split bills with friends, and manage
-                  group trips all in one place. Say goodbye to financial confusion.
+                  group trips all in one place. Say goodbye to financial
+                  confusion.
                 </p>
 
                 {/* Benefits List */}
@@ -57,13 +73,13 @@ export default function Home() {
 
                 {/* CTA Button */}
                 <div className="flex flex-col sm:flex-row gap-4 pt-4">
-                  <a
-                    href="#login"
+                  <button
+                    onClick={handleGoogleLogin}
                     className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300"
                   >
                     Get Started Free
                     <ArrowRight className="w-5 h-5" />
-                  </a>
+                  </button>
                   <a
                     href="#features"
                     className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-white hover:bg-gray-50 text-gray-700 font-semibold rounded-xl shadow-md hover:shadow-lg border border-gray-200 transition-all duration-300"
@@ -89,16 +105,6 @@ export default function Home() {
                 </div>
               </div>
             </div>
-          </div>
-        </section>
-
-        {/* Login Section */}
-        <section
-          id="login"
-          className="py-12 sm:py-16 bg-white/50 backdrop-blur-sm"
-        >
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <Login />
           </div>
         </section>
 
@@ -141,15 +147,16 @@ export default function Home() {
               Ready to take control of your finances?
             </h2>
             <p className="text-lg text-gray-600 mb-8">
-              Join thousands of users who are already managing their money smarter.
+              Join thousands of users who are already managing their money
+              smarter.
             </p>
-            <a
-              href="#login"
+            <button
+              onClick={handleGoogleLogin}
               className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300"
             >
               Start Tracking Now
               <ArrowRight className="w-5 h-5" />
-            </a>
+            </button>
           </div>
         </section>
       </main>
@@ -185,10 +192,7 @@ export default function Home() {
                   </a>
                 </li>
                 <li>
-                  <a
-                    href="#"
-                    className="hover:text-white transition-colors"
-                  >
+                  <a href="#" className="hover:text-white transition-colors">
                     About
                   </a>
                 </li>

@@ -42,7 +42,8 @@ export default function FeaturesDetails() {
           Everything You Need to Manage Money
         </h2>
         <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-          Powerful features designed to make expense tracking and bill splitting effortless
+          Powerful features designed to make expense tracking and bill splitting
+          effortless
         </p>
       </div>
 
@@ -62,16 +63,11 @@ export default function FeaturesDetails() {
                 {feature.subtitle}
               </CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="pb-6">
               <p className="text-gray-600 text-center leading-relaxed">
                 {feature.description}
               </p>
             </CardContent>
-            <div className="px-6 pb-6">
-              <button className="w-full py-2 text-sm font-medium text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50 rounded-lg transition-colors">
-                Learn More →
-              </button>
-            </div>
           </Card>
         ))}
       </div>
