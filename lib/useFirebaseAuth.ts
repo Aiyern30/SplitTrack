@@ -1,19 +1,14 @@
 import { useState, useEffect } from "react";
 import { Auth } from "firebase/auth";
-import { initializeFirebase } from "./firebase";
+import { auth } from "./firebase";
 
 export const useFirebaseAuth = (): Auth | null => {
-  const [auth, setAuth] = useState<Auth | null>(null);
+  const [authInstance, setAuthInstance] = useState<Auth | null>(null);
 
   useEffect(() => {
-    try {
-      const { auth: firebaseAuth } = initializeFirebase();
-      setAuth(firebaseAuth);
-    } catch (error) {
-      console.error("Error initializing Firebase Auth:", error);
-      setAuth(null);
-    }
+    // Set the auth instance from the centralized firebase file
+    setAuthInstance(auth);
   }, []);
 
-  return auth;
+  return authInstance;
 };
