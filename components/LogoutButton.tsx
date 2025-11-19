@@ -1,3 +1,6 @@
+// This component is now integrated into DashboardHeader
+// Keep for backwards compatibility with other pages
+
 "use client";
 
 import React from "react";
