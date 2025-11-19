@@ -1,7 +1,15 @@
 "use client";
 
 import React, { useState } from "react";
-import { ChevronDown, ChevronUp, Menu, X, User, Settings, LogOut } from "lucide-react";
+import {
+  ChevronDown,
+  ChevronUp,
+  Menu,
+  X,
+  User,
+  Settings,
+  LogOut,
+} from "lucide-react";
 import { getAuth, signOut } from "firebase/auth";
 import { useRouter } from "next/navigation";
 
@@ -70,7 +78,9 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({ total }) => {
               <div className="flex items-center gap-3 flex-1 justify-center min-w-0">
                 <div
                   className={`w-2 h-2 sm:w-3 sm:h-3 rounded-full flex-shrink-0 ${
-                    isPositive ? "bg-green-400 animate-pulse" : "bg-red-400 animate-pulse"
+                    isPositive
+                      ? "bg-green-400 animate-pulse"
+                      : "bg-red-400 animate-pulse"
                   }`}
                 />
                 <div className="flex flex-col sm:flex-row sm:items-center sm:gap-3">
@@ -104,9 +114,7 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({ total }) => {
           {/* Menu Dropdown */}
           <div
             className={`transition-all duration-300 ease-in-out border-t border-white/20 ${
-              isMenuOpen
-                ? "max-h-48 opacity-100"
-                : "max-h-0 opacity-0"
+              isMenuOpen ? "max-h-48 opacity-100" : "max-h-0 opacity-0"
             } overflow-hidden`}
           >
             <div className="px-4 sm:px-6 py-3 space-y-2">
@@ -146,9 +154,7 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({ total }) => {
           {/* Expanded View */}
           <div
             className={`transition-all duration-500 ease-in-out border-t border-white/20 ${
-              isExpanded
-                ? "max-h-64 opacity-100"
-                : "max-h-0 opacity-0"
+              isExpanded ? "max-h-64 opacity-100" : "max-h-0 opacity-0"
             } overflow-hidden`}
           >
             <div className="px-4 sm:px-6 pb-4 sm:pb-6 pt-4">
