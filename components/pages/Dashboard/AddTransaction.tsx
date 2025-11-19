@@ -191,7 +191,7 @@ export default function AddTransaction({ onSuccess }: AddTransactionProps) {
           </DrawerTitle>
         </DrawerHeader>
 
-        <div className="overflow-y-auto p-6 space-y-6 pb-32">
+        <div className="overflow-y-auto p-6 space-y-6 pb-6">
           {/* Amount Input */}
           <div className="space-y-2">
             <Label className="text-sm font-semibold text-gray-800 flex items-center gap-2">
@@ -280,7 +280,7 @@ export default function AddTransaction({ onSuccess }: AddTransactionProps) {
               </div>
             ) : (
               <div className="w-full p-4 border-2 border-dashed border-gray-400 rounded-xl bg-gray-50/50">
-                <p className="text-sm text-gray-600 mb-3 text-center">
+                <p className="text-sm text-gray-600 mb-3 text-center font-medium">
                   Select a category for your transaction
                 </p>
                 <Category onSelectCategory={handleCategorySelect} />
@@ -366,6 +366,13 @@ export default function AddTransaction({ onSuccess }: AddTransactionProps) {
               Attach Photo (Optional)
             </Label>
             <SelectPhoto onSelectImage={setSelectedImage} />
+            {selectedImage && (
+              <div className="mt-2 p-2 bg-green-50 border border-green-200 rounded-lg">
+                <p className="text-sm text-green-700 font-medium">
+                  ✓ Photo attached
+                </p>
+              </div>
+            )}
           </div>
         </div>
 
