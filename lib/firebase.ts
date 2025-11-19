@@ -1,6 +1,7 @@
-import { initializeApp, FirebaseApp } from "firebase/app";
-import { getAuth, Auth } from "firebase/auth";
-import { getFirestore, Firestore } from "firebase/firestore";
+import { initializeApp, getApps, getApp } from "firebase/app";
+import { getAuth } from "firebase/auth";
+import { getFirestore } from "firebase/firestore";
+import { getStorage } from "firebase/storage";
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY!,
@@ -11,30 +12,11 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID!,
 };
 
-let firebaseApp: FirebaseApp | undefined;
-let auth: Auth | undefined;
-let firestore: Firestore | undefined;
+// Initialize Firebase only if it hasn't been initialized
+const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
 
-const initializeFirebase = () => {
-  if (typeof window !== "undefined") {
-    if (!firebaseApp) {
-      firebaseApp = initializeApp(firebaseConfig);
-    }
-    if (!auth) {
-      auth = getAuth(firebaseApp);
-    }
-    if (!firestore) {
-      firestore = getFirestore(firebaseApp);
-    }
-    if (!auth || !firestore) {
-      throw new Error("Failed to initialize Firebase services.");
-    }
-    return { auth, firestore };
-  } else {
-    throw new Error(
-      "Firebase services can only be initialized in the browser."
-    );
-  }
-};
+export const auth = getAuth(app);
+export const db = getFirestore(app);
+export const storage = getStorage(app);
 
-export { initializeFirebase };
+export default app;

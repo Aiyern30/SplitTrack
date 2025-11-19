@@ -4,7 +4,8 @@
 "use client";
 
 import React from "react";
-import { getAuth, signOut } from "firebase/auth";
+import { auth } from "@/lib/firebase";
+import { signOut } from "firebase/auth";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui";
 import { LogOut } from "lucide-react";
@@ -13,12 +14,12 @@ const LogoutButton = () => {
   const router = useRouter();
 
   const handleLogout = async () => {
-    const auth = getAuth();
     try {
       await signOut(auth);
       router.push("/");
     } catch (error) {
       console.error("Error signing out: ", error);
+      alert("Failed to sign out. Please try again.");
     }
   };
 

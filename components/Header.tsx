@@ -2,20 +2,31 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { getAuth, signInWithPopup, GoogleAuthProvider } from "firebase/auth";
+import { auth } from "@/lib/firebase";
+import { signInWithPopup, GoogleAuthProvider } from "firebase/auth";
 import { useRouter } from "next/navigation";
 
 export default function Header() {
   const router = useRouter();
 
   const handleGoogleLogin = async () => {
-    const auth = getAuth();
     const provider = new GoogleAuthProvider();
 
     try {
       await signInWithPopup(auth, provider);
       router.push("/Dashboard");
-    } catch (error) {
+    } catch (error: any) {
+      // Check if user cancelled the popup
+      if (
+        error.code === "auth/popup-closed-by-user" ||
+        error.code === "auth/cancelled-popup-request"
+      ) {
+        // User closed the popup - don't show error
+        console.log("Sign-in popup was closed by user");
+        return;
+      }
+
+      // Show error only for actual failures
       console.error("Error signing in with Google: ", error);
       alert("Failed to sign in. Please try again.");
     }
@@ -48,12 +59,7 @@ export default function Header() {
             >
               Features
             </a>
-            <button
-              onClick={handleGoogleLogin}
-              className="text-gray-600 hover:text-indigo-600 font-medium transition-colors"
-            >
-              Login
-            </button>
+
             <button
               onClick={handleGoogleLogin}
               className="px-6 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transform hover:scale-105 transition-all duration-300"

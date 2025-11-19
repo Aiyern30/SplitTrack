@@ -30,8 +30,8 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import SelectPhoto from "./SelectPhoto";
 import { format } from "date-fns";
 import { addExpenseToFirestore } from "@/lib/firestoreService";
-import { getAuth } from "firebase/auth";
-import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { auth, storage } from "@/lib/firebase";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
 interface AddTransactionProps {
   onSuccess: () => void;
@@ -79,8 +79,7 @@ export default function AddTransaction({ onSuccess }: AddTransactionProps) {
   const handleImageSelect = async (
     imageUrl: string
   ): Promise<string | null> => {
-    const storage = getStorage();
-    const user = getAuth().currentUser;
+    const user = auth.currentUser;
 
     if (!user) {
       alert("You must be logged in to add an expense.");
@@ -102,7 +101,6 @@ export default function AddTransaction({ onSuccess }: AddTransactionProps) {
   };
 
   const handleSubmit = async () => {
-    const auth = getAuth();
     const user = auth.currentUser;
 
     if (!user) {

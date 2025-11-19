@@ -1,5 +1,4 @@
-import { initializeFirebase } from "@/lib/firebase";
-import { getAuth } from "firebase/auth";
+import { db, auth } from "./firebase";
 import {
   collection,
   addDoc,
@@ -34,29 +33,20 @@ interface User {
 }
 
 const createUserProfile = async (user: User) => {
-  const { firestore } = initializeFirebase();
-  console.log("firestore", firestore);
-
-  const userRef = doc(firestore, "users", user.uid);
-  console.log("userRef", userRef);
-
-  // Check if the user document already exists
+  const userRef = doc(db, "users", user.uid);
   const docSnapshot = await getDoc(userRef);
   if (!docSnapshot.exists()) {
-    // Create a new user document if it doesn't exist
     await setDoc(userRef, {
       uid: user.uid,
-      displayName: user.displayName || null, // Allow null if no name is provided
-      email: user.email || null, // Allow null if no email is provided
-      photoURL: user.photoURL || null, // Include imageUrl if available
+      displayName: user.displayName || null,
+      email: user.email || null,
+      photoURL: user.photoURL || null,
     });
   }
 };
 
 const fetchUserNames = async (userIds: string[]) => {
-  const { firestore } = initializeFirebase();
-
-  const userRefs = userIds.map((id) => doc(firestore, "users", id));
+  const userRefs = userIds.map((id) => doc(db, "users", id));
 
   const userSnapshots = await Promise.all(userRefs.map((ref) => getDoc(ref)));
 
@@ -78,38 +68,21 @@ const addExpenseToFirestore = async (
   date: string,
   items: Item[]
 ): Promise<void> => {
-  const { firestore } = initializeFirebase();
-  const auth = getAuth();
-  const user = auth.currentUser;
-
-  if (!user) {
-    throw new Error("User not authenticated");
-  }
-
-  try {
-    await addDoc(collection(firestore, "ownExpenses"), {
-      date,
-      items,
-      userId: user.uid,
-    });
-    console.log("Expense successfully added!");
-  } catch (error) {
-    console.error("Error adding expense: ", error);
-    throw error;
-  }
+  const currentUser = auth.currentUser;
+  await addDoc(collection(db, "ownExpenses"), {
+    date,
+    items,
+    userId: currentUser?.uid || "",
+  });
 };
 
 const fetchExpensesFromFirestore = async (): Promise<DataItem[]> => {
-  const { firestore } = initializeFirebase();
-  const auth = getAuth();
-  const user = auth.currentUser;
-
-  if (!user) {
-    throw new Error("User not authenticated");
-  }
-
-  const expensesCollection = collection(firestore, "ownExpenses");
-  const q = query(expensesCollection, where("userId", "==", user.uid));
+  const currentUser = auth.currentUser;
+  const expensesCollection = collection(db, "ownExpenses");
+  const q = query(
+    expensesCollection,
+    where("userId", "==", currentUser?.uid || "")
+  );
   const expenseDocs = await getDocs(q);
 
   const expenses: DataItem[] = expenseDocs.docs.map((doc) => ({
@@ -124,32 +97,22 @@ const fetchExpensesFromFirestore = async (): Promise<DataItem[]> => {
 };
 
 const fetchExpensesWithFriends = async (): Promise<DataItem[]> => {
-  const { firestore } = initializeFirebase();
-  const auth = getAuth();
-  const user = auth.currentUser;
+  const currentUser = auth.currentUser;
+  const userId = currentUser?.uid || "";
+  const expensesCollection = collection(db, "ownExpenses");
 
-  if (!user) {
-    throw new Error("User not authenticated");
-  }
-
-  const userId = user.uid; // Current logged-in user
-  const expensesCollection = collection(firestore, "ownExpenses");
-
-  // Query for expenses where the current user created the expense
   const q = query(expensesCollection, where("userId", "==", userId));
-
   const expenseDocs = await getDocs(q);
-  console.log("Fetched documents:", expenseDocs.docs.length); // Check how many documents were fetched
 
   const expensesWithFriends: DataItem[] = expenseDocs.docs
     .map((doc) => {
       const data = doc.data();
       return {
         date: data.date,
-        items: data.items.filter((item: Item) => item.to !== userId), // Keep only items where the recipient is a friend
+        items: data.items.filter((item: Item) => item.to !== userId),
       };
     })
-    .filter((expense) => expense.items.length > 0); // Remove expenses with no relevant items
+    .filter((expense) => expense.items.length > 0);
 
   return expensesWithFriends;
 };

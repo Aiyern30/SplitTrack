@@ -1,28 +1,30 @@
+"use client";
+
 import { useEffect, useState } from "react";
+import { auth } from "./firebase";
 import { onAuthStateChanged, Auth } from "firebase/auth";
-import { initializeFirebase } from "./firebase"; // Import the initialization function
 import { useRouter } from "next/navigation";
 
 const useAuth = () => {
-  const [authState, setAuthState] = useState<Auth | null>(null);
+  const [authInstance, setAuthInstance] = useState<Auth | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
   useEffect(() => {
-    const { auth } = initializeFirebase(); // Initialize Firebase and get the auth instance
-
     const unsubscribe = onAuthStateChanged(auth, (user) => {
-      setLoading(false);
-      if (!user) {
-        router.push("/"); // Redirect to home if not authenticated
+      if (user) {
+        setAuthInstance(auth);
+      } else {
+        setAuthInstance(null);
+        router.push("/");
       }
-      setAuthState(auth); // Set authState only if the auth instance is available
+      setLoading(false);
     });
 
-    return () => unsubscribe(); // Cleanup subscription on unmount
+    return () => unsubscribe();
   }, [router]);
 
-  return { auth: authState, loading };
+  return { auth: authInstance, loading };
 };
 
 export default useAuth;
