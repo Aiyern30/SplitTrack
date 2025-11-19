@@ -5,71 +5,75 @@ import {
   CardTitle,
   CardDescription,
   CardContent,
-  CardFooter,
 } from "@/components/ui";
 
 export default function FeaturesDetails() {
+  const features = [
+    {
+      icon: "📊",
+      title: "Expense Tracking",
+      subtitle: "Daily, Monthly & Yearly",
+      description:
+        "Easily track your expenses by inputting details. Monitor your spending daily, monthly, and yearly, and filter your data for better insights.",
+      color: "from-blue-500 to-cyan-500",
+    },
+    {
+      icon: "👥",
+      title: "Friend Expenses",
+      subtitle: "Track Who Owes Who",
+      description:
+        "Keep track of expenses with friends. Know how much money you owe or how much they owe you effortlessly.",
+      color: "from-purple-500 to-pink-500",
+    },
+    {
+      icon: "💸",
+      title: "Group Expenses",
+      subtitle: "Track Trip Expenses",
+      description:
+        "Manage group expenses effectively. Split costs during trips and track who owes whom, ensuring clarity and fairness in shared expenses.",
+      color: "from-orange-500 to-red-500",
+    },
+  ];
+
   return (
-    <div className="flex flex-col gap-4 items-center justify-center mb-5">
-      <div className="text-3xl font-bold text-black">Features We Have</div>
-      <div className="grid gap-y-8 gap-x-8 sm:grid-cols-2 lg:grid-cols-3">
-        {/* Expense Tracking Feature */}
-        <Card className="w-80">
-          <CardHeader className="flex flex-col items-center">
-            <span className="text-5xl">📊</span>
-            <CardTitle className="text-xl">Expense Tracking</CardTitle>
-            <CardDescription>Daily, Monthly & Yearly</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <p className="text-justify">
-              Easily track your expenses by inputting details. Monitor your
-              spending daily, monthly, and yearly, and filter your data for
-              better insights.
-            </p>
-          </CardContent>
-          <CardFooter>
-            <p className="text-gray-400">Stay on top of your finances</p>
-          </CardFooter>
-        </Card>
+    <div className="w-full">
+      <div className="text-center mb-12">
+        <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
+          Everything You Need to Manage Money
+        </h2>
+        <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+          Powerful features designed to make expense tracking and bill splitting effortless
+        </p>
+      </div>
 
-        {/* Friend Expenses Feature */}
-        <Card className="w-80">
-          <CardHeader className="flex flex-col items-center">
-            <span className="text-5xl">👥</span>
-            <CardTitle className="text-xl">Friend Expenses</CardTitle>
-            <CardDescription>Track Who Owes Who</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <p className="text-justify">
-              Keep track of expenses with friends. Know how much money you owe
-              or how much they owe you effortlessly.
-            </p>
-          </CardContent>
-          <CardFooter>
-            <p className="text-gray-400">Easier group financial management</p>
-          </CardFooter>
-        </Card>
-
-        {/* Group Expenses Feature */}
-        <Card className="w-80">
-          <CardHeader className="flex flex-col items-center">
-            <span className="text-5xl">💸</span>
-            <CardTitle className="text-xl">Group Expenses</CardTitle>
-            <CardDescription>Track Trip Expenses</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <p className="text-justify">
-              Manage group expenses effectively. Split costs during trips and
-              track who owes whom, ensuring clarity and fairness in shared
-              expenses.
-            </p>
-          </CardContent>
-          <CardFooter>
-            <p className="text-gray-400">
-              Enjoy your trips without financial stress
-            </p>
-          </CardFooter>
-        </Card>
+      <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3 max-w-7xl mx-auto">
+        {features.map((feature, index) => (
+          <Card
+            key={index}
+            className="group hover:shadow-2xl transition-all duration-300 border-0 overflow-hidden bg-white/80 backdrop-blur-sm"
+          >
+            <div className={`h-2 bg-gradient-to-r ${feature.color}`} />
+            <CardHeader className="text-center pb-4">
+              <div className="text-6xl mb-4 transform group-hover:scale-110 transition-transform duration-300">
+                {feature.icon}
+              </div>
+              <CardTitle className="text-xl mb-2">{feature.title}</CardTitle>
+              <CardDescription className="text-sm font-medium text-indigo-600">
+                {feature.subtitle}
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <p className="text-gray-600 text-center leading-relaxed">
+                {feature.description}
+              </p>
+            </CardContent>
+            <div className="px-6 pb-6">
+              <button className="w-full py-2 text-sm font-medium text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50 rounded-lg transition-colors">
+                Learn More →
+              </button>
+            </div>
+          </Card>
+        ))}
       </div>
     </div>
   );
