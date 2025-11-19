@@ -79,42 +79,46 @@ const OwnTabContent: React.FC<OwnTabContentProps> = ({
                 {items.map((item, itemIndex) => (
                   <div
                     key={itemIndex}
-                    className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 sm:p-5 hover:bg-gradient-to-r hover:from-indigo-50/50 hover:to-purple-50/50 transition-all duration-200"
+                    className="flex items-start gap-3 sm:gap-4 p-4 sm:p-5 hover:bg-gradient-to-r hover:from-indigo-50/50 hover:to-purple-50/50 transition-all duration-200"
                   >
-                    {/* Left Section: Icon + Details */}
-                    <div className="flex items-start sm:items-center gap-3 sm:gap-4 flex-1 min-w-0">
-                      <div className="flex-shrink-0 mt-1 sm:mt-0">
-                        <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl bg-gradient-to-br from-indigo-100 to-purple-100 flex items-center justify-center shadow-sm">
-                          <RenderIcon category={item.icon} type={item.type} />
-                        </div>
+                    {/* Left: Icon */}
+                    <div className="flex-shrink-0">
+                      <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl bg-gradient-to-br from-indigo-100 to-purple-100 flex items-center justify-center shadow-sm">
+                        <RenderIcon category={item.icon} type={item.type} />
+                      </div>
+                    </div>
+
+                    {/* Middle: Title, Tag, Image */}
+                    <div className="flex flex-col gap-2 flex-1 min-w-0">
+                      {/* Title */}
+                      <div className="font-semibold text-sm sm:text-base text-gray-900">
+                        {item.title}
                       </div>
 
-                      <div className="flex flex-col min-w-0 flex-1">
-                        <div className="font-semibold text-sm sm:text-base text-gray-900 truncate">
-                          {item.title}
+                      {/* Description (if exists) */}
+                      {item.description && (
+                        <div className="text-gray-600 text-xs sm:text-sm line-clamp-2">
+                          {item.description}
                         </div>
-                        {item.description && (
-                          <div className="text-gray-600 text-xs sm:text-sm mt-0.5 line-clamp-2">
-                            {item.description}
-                          </div>
-                        )}
-                        <div className="flex items-center gap-2 mt-1">
-                          <span
-                            className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
-                              item.type === "income"
-                                ? "bg-green-100 text-green-800"
-                                : "bg-red-100 text-red-800"
-                            }`}
-                          >
-                            {item.type === "income" ? "Income" : "Expense"}
-                          </span>
-                        </div>
+                      )}
+
+                      {/* Tag */}
+                      <div>
+                        <span
+                          className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
+                            item.type === "income"
+                              ? "bg-green-100 text-green-800"
+                              : "bg-red-100 text-red-800"
+                          }`}
+                        >
+                          {item.type === "income" ? "Income" : "Expense"}
+                        </span>
                       </div>
 
                       {/* Image */}
                       {item.imageUrl && (
-                        <div className="flex-shrink-0 ml-auto sm:ml-0">
-                          <Avatar className="w-16 h-16 sm:w-20 sm:h-20 rounded-xl overflow-hidden border-2 border-indigo-100 shadow-md hover:scale-105 transition-transform duration-200">
+                        <div className="mt-1">
+                          <Avatar className="w-20 h-20 sm:w-24 sm:h-24 rounded-xl overflow-hidden border-2 border-indigo-100 shadow-md hover:scale-105 transition-transform duration-200">
                             <AvatarImage
                               src={item.imageUrl}
                               alt="Transaction"
@@ -128,10 +132,10 @@ const OwnTabContent: React.FC<OwnTabContentProps> = ({
                       )}
                     </div>
 
-                    {/* Right Section: Amount */}
-                    <div className="flex items-center justify-end sm:justify-start">
+                    {/* Right: Price */}
+                    <div className="flex-shrink-0 self-start">
                       <div
-                        className={`text-right font-bold text-lg sm:text-xl flex-shrink-0 px-4 py-2 rounded-lg ${
+                        className={`text-right font-bold text-lg sm:text-xl px-4 py-2 rounded-lg ${
                           item.type === "income"
                             ? "text-green-600 bg-green-50"
                             : "text-red-600 bg-red-50"

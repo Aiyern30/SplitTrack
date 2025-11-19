@@ -15,7 +15,7 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({ total }) => {
     <div className="px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
         <div
-          className={`bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 rounded-b-2xl shadow-lg cursor-pointer transition-all duration-500 ease-in-out overflow-hidden ${
+          className={`bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 rounded-2xl shadow-lg cursor-pointer transition-all duration-500 ease-in-out overflow-hidden ${
             isExpanded ? "shadow-2xl" : "shadow-md hover:shadow-lg"
           }`}
           onClick={() => setIsExpanded(!isExpanded)}
@@ -135,7 +135,9 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({ total }) => {
                   <span>
                     {isPositive
                       ? "100%"
-                      : `${Math.max(20, 100 - Math.abs(total) / 100).toFixed(0)}%`}
+                      : `${Math.max(20, 100 - Math.abs(total) / 100).toFixed(
+                          0
+                        )}%`}
                   </span>
                 </div>
                 <div className="bg-white/20 rounded-full h-2 overflow-hidden backdrop-blur-sm">
