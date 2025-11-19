@@ -57,19 +57,19 @@ const OwnTabContent: React.FC<OwnTabContentProps> = ({
               <Card className="border border-gray-200 shadow-md hover:shadow-lg transition-all duration-300 overflow-hidden bg-white">
                 {/* Date Header */}
                 <div className="bg-gradient-to-r from-indigo-50 to-purple-50 border-b border-gray-200">
-                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 px-4 sm:px-6 py-3">
+                  <div className="flex justify-between items-center gap-2 px-4 sm:px-6 py-3">
                     <div className="flex items-center gap-2">
                       <div className="w-2 h-2 rounded-full bg-indigo-500"></div>
                       <h3 className="font-semibold text-base sm:text-lg text-gray-800">
                         {date}
                       </h3>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs sm:text-sm text-gray-600 font-medium">
+                    <div className="flex items-center gap-1 sm:gap-2">
+                      <span className="hidden sm:inline text-xs sm:text-sm text-gray-600 font-medium">
                         Day Total:
                       </span>
                       <span
-                        className={`font-bold text-base sm:text-lg px-3 py-1 rounded-full ${
+                        className={`font-bold text-sm sm:text-base lg:text-lg px-2 sm:px-3 py-1 rounded-full ${
                           dayTotal >= 0
                             ? "bg-green-100 text-green-700"
                             : "bg-red-100 text-red-700"
@@ -95,16 +95,28 @@ const OwnTabContent: React.FC<OwnTabContentProps> = ({
                         </div>
                       </div>
 
-                      {/* Middle: Title, Tag, Image */}
+                      {/* Middle: Title, Description, Tag, Image */}
                       <div className="flex flex-col gap-2 flex-1 min-w-0">
-                        {/* Title */}
-                        <div className="font-semibold text-sm sm:text-base text-gray-900">
-                          {item.title}
+                        {/* Title and Price Row */}
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="font-semibold text-sm sm:text-base text-gray-900 flex-1">
+                            {item.title}
+                          </div>
+                          <div
+                            className={`text-right font-bold text-base sm:text-lg lg:text-xl flex-shrink-0 px-2 sm:px-3 py-1 rounded-lg ${
+                              item.type === "income"
+                                ? "text-green-600 bg-green-50"
+                                : "text-red-600 bg-red-50"
+                            }`}
+                          >
+                            {item.type === "income" ? "+" : "-"}$
+                            {item.price.toFixed(2)}
+                          </div>
                         </div>
 
                         {/* Description (if exists) */}
                         {item.description && (
-                          <div className="text-gray-600 text-xs sm:text-sm line-clamp-2">
+                          <div className="text-gray-600 text-xs sm:text-sm line-clamp-2 pr-2">
                             {item.description}
                           </div>
                         )}
@@ -145,20 +157,6 @@ const OwnTabContent: React.FC<OwnTabContentProps> = ({
                             </Avatar>
                           </div>
                         )}
-                      </div>
-
-                      {/* Right: Price */}
-                      <div className="flex-shrink-0 self-start">
-                        <div
-                          className={`text-right font-bold text-lg sm:text-xl px-4 py-2 rounded-lg ${
-                            item.type === "income"
-                              ? "text-green-600 bg-green-50"
-                              : "text-red-600 bg-red-50"
-                          }`}
-                        >
-                          {item.type === "income" ? "+" : "-"}$
-                          {item.price.toFixed(2)}
-                        </div>
                       </div>
                     </div>
                   ))}
