@@ -156,7 +156,9 @@ const Dashboard = () => {
               Track your expenses and split bills with friends
             </p>
           </div>
-          <LogoutButton />
+          <div className="flex items-center gap-3">
+            <LogoutButton />
+          </div>
         </div>
 
         <Card className="border-0 shadow-xl bg-white/95 backdrop-blur overflow-hidden">
@@ -166,8 +168,8 @@ const Dashboard = () => {
             onValueChange={setActiveTab}
           >
             <div className="bg-gradient-to-r from-indigo-500 to-purple-600 px-4 sm:px-6 py-4">
-              <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-                <TabsList className="w-full sm:w-auto bg-white/20 backdrop-blur-sm border border-white/30 p-1 rounded-xl grid grid-cols-4 gap-1">
+              <div className="flex flex-col gap-4">
+                <TabsList className="w-full sm:w-auto bg-white/20 backdrop-blur-sm border border-white/30 p-1 rounded-xl grid grid-cols-4 gap-1 mx-auto">
                   <TabsTrigger
                     value="OWN"
                     className="text-xs sm:text-sm font-medium data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-md text-white rounded-lg transition-all"
@@ -193,27 +195,25 @@ const Dashboard = () => {
                     Activity
                   </TabsTrigger>
                 </TabsList>
-                <div className="flex justify-center sm:justify-end">
-                  <AddTransaction onSuccess={refreshData} />
-                </div>
+
+                {activeTab === "FRIENDS" && (
+                  <div className="flex justify-center sm:justify-end">
+                    <Select onValueChange={handleSelectChange}>
+                      <SelectTrigger className="w-full sm:w-[220px] bg-white/95 backdrop-blur border-white/50 focus:ring-2 focus:ring-white/50">
+                        <SelectValue placeholder="Filter by friend" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Friends</SelectItem>
+                        {userIds.map((userId) => (
+                          <SelectItem key={userId} value={userId}>
+                            {userNames[userId] || "Unknown User"}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
               </div>
-              {activeTab === "FRIENDS" && (
-                <div className="mt-4 flex justify-center sm:justify-end">
-                  <Select onValueChange={handleSelectChange}>
-                    <SelectTrigger className="w-full sm:w-[220px] bg-white/95 backdrop-blur border-white/50 focus:ring-2 focus:ring-white/50">
-                      <SelectValue placeholder="Filter by friend" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Friends</SelectItem>
-                      {userIds.map((userId) => (
-                        <SelectItem key={userId} value={userId}>
-                          {userNames[userId] || "Unknown User"}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              )}
             </div>
 
             <TabsContent value="OWN" className="p-4 sm:p-6 mt-0">
@@ -282,6 +282,35 @@ const Dashboard = () => {
             </TabsContent>
           </Tabs>
         </Card>
+      </div>
+
+      {/* Floating Action Button */}
+      <div className="fixed bottom-6 right-6 sm:bottom-8 sm:right-8 z-50">
+        <div className="relative group">
+          {/* Tooltip */}
+          <div className="absolute bottom-full right-0 mb-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">
+            <div className="bg-gray-900 text-white text-xs sm:text-sm px-3 py-2 rounded-lg whitespace-nowrap shadow-lg">
+              {activeTab === "OWN" && "Add Personal Transaction"}
+              {activeTab === "FRIENDS" && "Split with Friends"}
+              {activeTab === "GROUPS" && "Add Group Expense"}
+              {activeTab === "ACTIVITY" && "Add Transaction"}
+            </div>
+          </div>
+
+          {/* FAB Button */}
+          <div className="relative">
+            <AddTransaction onSuccess={refreshData} />
+            {/* Active Tab Indicator */}
+            <div className="absolute -top-1 -right-1 w-6 h-6 bg-white rounded-full flex items-center justify-center shadow-md">
+              <span className="text-xs font-bold text-indigo-600">
+                {activeTab === "OWN" && "O"}
+                {activeTab === "FRIENDS" && "F"}
+                {activeTab === "GROUPS" && "G"}
+                {activeTab === "ACTIVITY" && "A"}
+              </span>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );

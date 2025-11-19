@@ -1,25 +1,35 @@
-// components/LogoutButton.tsx
+"use client";
+
 import React from "react";
-import { useRouter } from "next/navigation"; // Import useRouter
 import { getAuth, signOut } from "firebase/auth";
+import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui";
+import { LogOut } from "lucide-react";
 
-const LogoutButton: React.FC = () => {
-  const router = useRouter(); // Initialize useRouter
-  const auth = getAuth(); // Get the Firebase Auth instance
+const LogoutButton = () => {
+  const router = useRouter();
 
-  const handleSignOut = async () => {
+  const handleLogout = async () => {
+    const auth = getAuth();
     try {
-      await signOut(auth); // Sign out from Firebase
-      localStorage.removeItem("user"); // Clear user info from local storage
-
-      // Redirect to the home page after successful logout
-      router.push("/"); // Use router.push to navigate
+      await signOut(auth);
+      router.push("/");
     } catch (error) {
-      console.error("Sign-out error:", error);
+      console.error("Error signing out: ", error);
     }
   };
 
-  return <button onClick={handleSignOut}>Logout</button>;
+  return (
+    <Button
+      onClick={handleLogout}
+      variant="outline"
+      size="sm"
+      className="flex items-center gap-2 bg-white/90 hover:bg-white border-gray-200 text-gray-700 hover:text-red-600 transition-colors"
+    >
+      <LogOut className="w-4 h-4" />
+      <span className="hidden sm:inline">Logout</span>
+    </Button>
+  );
 };
 
 export default LogoutButton;

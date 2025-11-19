@@ -191,10 +191,13 @@ export default function AddTransaction({ onSuccess }: AddTransactionProps) {
 
   return (
     <Drawer open={isDrawerOpen} onOpenChange={setIsDrawerOpen}>
-      <DrawerTrigger onClick={handleDrawerOpen}>
-        <IoIosAddCircle color="#4CBB9B" />
+      <DrawerTrigger onClick={handleDrawerOpen} asChild>
+        <button className="group relative w-14 h-14 sm:w-16 sm:h-16 bg-gradient-to-br from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 rounded-full shadow-xl hover:shadow-2xl transition-all duration-300 flex items-center justify-center transform hover:scale-110 active:scale-95">
+          <IoIosAddCircle className="w-8 h-8 sm:w-10 sm:h-10 text-white" />
+          <div className="absolute inset-0 rounded-full bg-white opacity-0 group-hover:opacity-20 transition-opacity duration-300"></div>
+        </button>
       </DrawerTrigger>
-      <DrawerContent className="overflow-y-auto ">
+      <DrawerContent className="overflow-y-auto">
         <DrawerHeader className="px-8 h-36">
           <DrawerTitle className="text-center">Add Transaction</DrawerTitle>
           <div className="flex items-center justify-between">

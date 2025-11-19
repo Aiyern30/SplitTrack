@@ -12,7 +12,7 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({ total }) => {
   const isPositive = total >= 0;
 
   return (
-    <div className="px-4 sm:px-6 lg:px-8">
+    <div className="px-4 sm:px-6 lg:px-8 pb-2">
       <div className="max-w-7xl mx-auto">
         <div
           className={`bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 rounded-2xl shadow-lg cursor-pointer transition-all duration-500 ease-in-out overflow-hidden ${
