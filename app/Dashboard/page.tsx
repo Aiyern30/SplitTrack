@@ -133,46 +133,55 @@ const Dashboard = () => {
   const currentTotal = activeTab === "OWN" ? total : friendTotal;
 
   return (
-    <div>
+    <div className="min-h-screen bg-gray-50">
       <DashboardHeader total={currentTotal} />
       <LogoutButton />
-      <div className="px-16 py-8">
-        <Card className="p-0">
+      <div className="px-4 sm:px-8 lg:px-16 py-4 sm:py-8">
+        <Card className="p-0 shadow-lg">
           <Tabs
             defaultValue="OWN"
             className="w-full"
             onValueChange={setActiveTab}
           >
-            <div className="flex flex-col sm:flex-row items-center p-4">
-              <TabsList className="mx-auto">
-                <TabsTrigger value="OWN">OWN</TabsTrigger>
-                <TabsTrigger value="FRIENDS">FRIENDS</TabsTrigger>
-                <TabsTrigger value="GROUPS">GROUPS</TabsTrigger>
-                <TabsTrigger value="ACTIVITY">ACTIVITY</TabsTrigger>
-              </TabsList>
-              <div className="flex justify-end text-6xl cursor-pointer">
-                <AddTransaction onSuccess={refreshData} />
+            <div className="flex flex-col gap-4 p-4 border-b">
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+                <TabsList className="w-full sm:w-auto grid grid-cols-4 sm:flex">
+                  <TabsTrigger value="OWN" className="text-xs sm:text-sm">
+                    OWN
+                  </TabsTrigger>
+                  <TabsTrigger value="FRIENDS" className="text-xs sm:text-sm">
+                    FRIENDS
+                  </TabsTrigger>
+                  <TabsTrigger value="GROUPS" className="text-xs sm:text-sm">
+                    GROUPS
+                  </TabsTrigger>
+                  <TabsTrigger value="ACTIVITY" className="text-xs sm:text-sm">
+                    ACTIVITY
+                  </TabsTrigger>
+                </TabsList>
+                <div className="flex justify-center sm:justify-end">
+                  <AddTransaction onSuccess={refreshData} />
+                </div>
               </div>
+              {activeTab === "FRIENDS" && (
+                <div className="flex justify-center sm:justify-end">
+                  <Select onValueChange={handleSelectChange}>
+                    <SelectTrigger className="w-full sm:w-[200px]">
+                      <SelectValue placeholder="Select User" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {userIds.map((userId) => (
+                        <SelectItem key={userId} value={userId}>
+                          {userNames[userId] || "Unknown User"}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
             </div>
-            {activeTab === "FRIENDS" && (
-              <div className="flex justify-end pr-12">
-                <Select onValueChange={handleSelectChange}>
-                  <SelectTrigger className="w-[180px]">
-                    <SelectValue placeholder="Select User" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {userIds.map((userId) => (
-                      <SelectItem key={userId} value={userId}>
-                        {userNames[userId] || "Unknown User"}
-                        {/* Display name or fallback */}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            )}
 
-            <TabsContent value="OWN" className="p-4">
+            <TabsContent value="OWN" className="p-4 mt-0">
               <OwnTabContent
                 groupedData={groupedOwnData}
                 sortedDates={sortedOwnDates}
@@ -180,7 +189,7 @@ const Dashboard = () => {
               />
             </TabsContent>
 
-            <TabsContent value="FRIENDS" className="p-4">
+            <TabsContent value="FRIENDS" className="p-4 mt-0">
               <FriendTabContent
                 groupedData={groupedFriendData}
                 sortedDates={sortedFriendDates}
@@ -189,12 +198,16 @@ const Dashboard = () => {
               />
             </TabsContent>
 
-            <TabsContent value="GROUPS" className="p-4">
-              <div>Content for GROUPS tab</div>
+            <TabsContent value="GROUPS" className="p-4 mt-0">
+              <div className="text-center text-gray-500 py-8">
+                Content for GROUPS tab
+              </div>
             </TabsContent>
 
-            <TabsContent value="ACTIVITY" className="p-4">
-              <div>Content for ACTIVITY tab</div>
+            <TabsContent value="ACTIVITY" className="p-4 mt-0">
+              <div className="text-center text-gray-500 py-8">
+                Content for ACTIVITY tab
+              </div>
             </TabsContent>
           </Tabs>
         </Card>

@@ -44,12 +44,12 @@ const OwnTabContent: React.FC<OwnTabContentProps> = ({
       {sortedDates.map((date, index) => {
         const items = groupedData[date];
         return (
-          <div key={index} className="mb-8">
-            <Card className="mb-4">
-              <div className="flex justify-between mb-4 bg-[#D9D9D9] px-4 py-2 rounded-t-xl">
-                <div className="font-semibold text-lg">{date}</div>
+          <div key={index} className="mb-6">
+            <Card className="mb-4 overflow-hidden">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 bg-[#D9D9D9] px-4 py-3 rounded-t-xl">
+                <div className="font-semibold text-base sm:text-lg">{date}</div>
                 <div
-                  className={`font-bold ${
+                  className={`font-bold text-sm sm:text-base ${
                     calculateTotal(items) >= 0
                       ? "text-green-500"
                       : "text-red-500"
@@ -58,48 +58,55 @@ const OwnTabContent: React.FC<OwnTabContentProps> = ({
                   Total: {calculateTotal(items).toFixed(2)}
                 </div>
               </div>
-              {chunkItems(items).map((itemPair, pairIndex) => (
-                <div key={pairIndex} className="px-4 py-2">
-                  {itemPair.map((item, itemIndex) => (
-                    <div
-                      key={itemIndex}
-                      className="flex items-center justify-between mb-4 last:mb-0"
-                    >
-                      <div className="flex items-center space-x-4">
+              <div className="divide-y divide-gray-100">
+                {items.map((item, itemIndex) => (
+                  <div
+                    key={itemIndex}
+                    className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 hover:bg-gray-50 transition-colors"
+                  >
+                    <div className="flex items-start sm:items-center gap-3 flex-1 min-w-0">
+                      <div className="flex-shrink-0">
                         <RenderIcon category={item.icon} type={item.type} />
-                        <div className="flex flex-col">
-                          <div className="font-semibold">{item.title}</div>
-                          {item.description && (
-                            <div className="text-gray-600">
-                              {item.description}
-                            </div>
-                          )}
+                      </div>
+                      <div className="flex flex-col min-w-0 flex-1">
+                        <div className="font-semibold text-sm sm:text-base truncate">
+                          {item.title}
                         </div>
-                        {item.imageUrl && (
-                          <Avatar className="w-16 h-16 rounded-full overflow-hidden">
-                            <AvatarImage
-                              src={item.imageUrl}
-                              alt="Transaction Image"
-                            />
-                            <AvatarFallback>Image</AvatarFallback>
-                          </Avatar>
+                        {item.description && (
+                          <div className="text-gray-600 text-xs sm:text-sm line-clamp-2">
+                            {item.description}
+                          </div>
                         )}
                       </div>
-                      <div
-                        className={`text-right font-bold ${
-                          item.type === "income"
-                            ? "text-green-500"
-                            : "text-red-500"
-                        }`}
-                      >
-                        {item.type === "income"
-                          ? `+${item.price}`
-                          : `-${item.price}`}
-                      </div>
+                      {item.imageUrl && (
+                        <div className="flex-shrink-0">
+                          <Avatar className="w-14 h-14 sm:w-16 sm:h-16 rounded-lg overflow-hidden border-2 border-gray-200">
+                            <AvatarImage
+                              src={item.imageUrl}
+                              alt="Transaction"
+                              className="object-cover"
+                            />
+                            <AvatarFallback className="bg-gray-100">
+                              IMG
+                            </AvatarFallback>
+                          </Avatar>
+                        </div>
+                      )}
                     </div>
-                  ))}
-                </div>
-              ))}
+                    <div
+                      className={`text-right font-bold text-base sm:text-lg flex-shrink-0 ${
+                        item.type === "income"
+                          ? "text-green-500"
+                          : "text-red-500"
+                      }`}
+                    >
+                      {item.type === "income"
+                        ? `+${item.price}`
+                        : `-${item.price}`}
+                    </div>
+                  </div>
+                ))}
+              </div>
             </Card>
           </div>
         );
