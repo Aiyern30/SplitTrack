@@ -249,7 +249,10 @@ const Dashboard = () => {
                         <SelectContent>
                           <SelectItem value="all">All Friends</SelectItem>
                           {friends.map((friend) => (
-                            <SelectItem key={friend.friendId} value={friend.friendId}>
+                            <SelectItem
+                              key={friend.friendId}
+                              value={friend.friendId}
+                            >
                               {friend.friendName}
                             </SelectItem>
                           ))}
@@ -356,7 +359,7 @@ const Dashboard = () => {
 
           {/* FAB Button */}
           <div className="relative">
-            <AddTransaction onSuccess={refreshData} />
+            <AddTransaction onSuccess={refreshData} activeTab={activeTab} />
             {/* Active Tab Indicator */}
             <div className="absolute -top-1 -right-1 w-6 h-6 bg-white rounded-full flex items-center justify-center shadow-md">
               <span className="text-xs font-bold text-indigo-600">

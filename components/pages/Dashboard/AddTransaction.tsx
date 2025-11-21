@@ -15,6 +15,11 @@ import {
   Input,
   Label,
   Button,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui";
 import { IoIosAddCircle } from "react-icons/io";
 import {
@@ -25,6 +30,7 @@ import {
   DollarSign,
   TrendingUp,
   TrendingDown,
+  Users,
 } from "lucide-react";
 import Category from "./Category";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -33,12 +39,14 @@ import { format } from "date-fns";
 import { addExpenseToFirestore } from "@/lib/firestoreService";
 import { auth, storage } from "@/lib/firebase";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { getFriends, Friend } from "@/lib/friendService";
 
 interface AddTransactionProps {
   onSuccess: () => void;
+  activeTab?: string; // Add activeTab prop to know which tab we're on
 }
 
-export default function AddTransaction({ onSuccess }: AddTransactionProps) {
+export default function AddTransaction({ onSuccess, activeTab = "OWN" }: AddTransactionProps) {
   const [amount, setAmount] = useState<number | string>("");
   const [noteText, setNoteText] = useState("");
   const [selectedLabel, setSelectedLabel] = useState<string>("");
@@ -51,6 +59,8 @@ export default function AddTransaction({ onSuccess }: AddTransactionProps) {
     "expenses" | "income" | null
   >(null);
   const [showLabelDialog, setShowLabelDialog] = useState(false);
+  const [friends, setFriends] = useState<Friend[]>([]);
+  const [selectedFriend, setSelectedFriend] = useState<string | null>(null);
 
   const dateInputRef = React.useRef<HTMLInputElement>(null);
 
@@ -101,6 +111,18 @@ export default function AddTransaction({ onSuccess }: AddTransactionProps) {
     }
   };
 
+  // Load friends when drawer opens and we're in FRIENDS tab
+  useEffect(() => {
+    const loadFriends = async () => {
+      if (isDrawerOpen && activeTab === "FRIENDS") {
+        const friendsList = await getFriends();
+        setFriends(friendsList);
+      }
+    };
+
+    loadFriends();
+  }, [isDrawerOpen, activeTab]);
+
   const handleSubmit = async () => {
     const user = auth.currentUser;
 
@@ -111,6 +133,12 @@ export default function AddTransaction({ onSuccess }: AddTransactionProps) {
 
     if (!amount || !selectedLabel || !category) {
       toast.error("Please fill in all required fields");
+      return;
+    }
+
+    // Check if friend is selected when in FRIENDS tab
+    if (activeTab === "FRIENDS" && !selectedFriend) {
+      toast.error("Please select a friend to split with");
       return;
     }
 
@@ -132,7 +160,8 @@ export default function AddTransaction({ onSuccess }: AddTransactionProps) {
             ? Math.abs(amountValue)
             : -Math.abs(amountValue),
         imageUrl: "",
-        to: user.uid,
+        // Use selected friend's ID if in FRIENDS tab, otherwise use own ID
+        to: activeTab === "FRIENDS" ? selectedFriend! : user.uid,
       },
     ];
 
@@ -155,13 +184,19 @@ export default function AddTransaction({ onSuccess }: AddTransactionProps) {
       setCategory(null);
       setCategoryIcon(null);
       setCategoryType(null);
+      setSelectedFriend(null);
       handleDrawerClose();
 
       if (onSuccess) {
         onSuccess();
       }
 
-      toast.success("Transaction added successfully!", { id: loadingToast });
+      toast.success(
+        activeTab === "FRIENDS" 
+          ? "Transaction split with friend successfully!" 
+          : "Transaction added successfully!", 
+        { id: loadingToast }
+      );
     } catch (error) {
       console.error("Error adding expense: ", error);
       toast.error("Failed to add transaction", { id: loadingToast });
@@ -188,11 +223,59 @@ export default function AddTransaction({ onSuccess }: AddTransactionProps) {
       <DrawerContent className="max-h-[80vh]">
         <DrawerHeader className="border-b border-gray-200 bg-gradient-to-r from-indigo-50 to-purple-50 py-4">
           <DrawerTitle className="text-center text-2xl font-bold text-gray-800">
-            Add New Transaction
+            {activeTab === "FRIENDS" ? "Split with Friend" : "Add New Transaction"}
           </DrawerTitle>
         </DrawerHeader>
 
         <div className="overflow-y-auto p-6 space-y-6 pb-6">
+          {/* Friend Selection - Only show when in FRIENDS tab */}
+          {activeTab === "FRIENDS" && (
+            <div className="space-y-2">
+              <Label className="text-sm font-semibold text-gray-800 flex items-center gap-2">
+                <Users className="w-4 h-4 text-indigo-600" />
+                Split With <span className="text-red-500">*</span>
+              </Label>
+              <Select value={selectedFriend || ""} onValueChange={setSelectedFriend}>
+                <SelectTrigger className="h-12 border-2 border-gray-300 focus:border-indigo-500 rounded-xl">
+                  <SelectValue placeholder="Select a friend to split with" />
+                </SelectTrigger>
+                <SelectContent>
+                  {friends.length === 0 ? (
+                    <div className="p-4 text-center text-gray-500 text-sm">
+                      No friends added yet. Add friends first!
+                    </div>
+                  ) : (
+                    friends.map((friend) => (
+                      <SelectItem key={friend.friendId} value={friend.friendId}>
+                        <div className="flex items-center gap-2">
+                          <div className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center">
+                            <span className="text-indigo-600 font-semibold text-sm">
+                              {friend.friendName[0]?.toUpperCase()}
+                            </span>
+                          </div>
+                          <div>
+                            <div className="font-medium">{friend.friendName}</div>
+                            <div className="text-xs text-gray-500">{friend.friendEmail}</div>
+                          </div>
+                        </div>
+                      </SelectItem>
+                    ))
+                  )}
+                </SelectContent>
+              </Select>
+              {selectedFriend && (
+                <div className="mt-2 p-3 bg-indigo-50 border border-indigo-200 rounded-lg">
+                  <p className="text-sm text-indigo-700">
+                    💡 This transaction will be split with{" "}
+                    <span className="font-semibold">
+                      {friends.find((f) => f.friendId === selectedFriend)?.friendName}
+                    </span>
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
+
           {/* Amount Input */}
           <div className="space-y-2">
             <Label className="text-sm font-semibold text-gray-800 flex items-center gap-2">
@@ -388,10 +471,15 @@ export default function AddTransaction({ onSuccess }: AddTransactionProps) {
           </Button>
           <Button
             onClick={handleSubmit}
-            disabled={!amount || !selectedLabel || !category}
+            disabled={
+              !amount || 
+              !selectedLabel || 
+              !category || 
+              (activeTab === "FRIENDS" && !selectedFriend)
+            }
             className="flex-1 h-12 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 disabled:from-gray-400 disabled:to-gray-500 disabled:cursor-not-allowed text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all"
           >
-            Add Transaction
+            {activeTab === "FRIENDS" ? "Split Transaction" : "Add Transaction"}
           </Button>
         </div>
       </DrawerContent>

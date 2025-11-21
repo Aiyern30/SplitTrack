@@ -104,7 +104,10 @@ export const sendFriendRequest = async (
     return { success: true, message: "Friend request sent successfully" };
   } catch (error: any) {
     console.error("Error sending friend request:", error);
-    return { success: false, message: error.message || "Failed to send friend request" };
+    return {
+      success: false,
+      message: error.message || "Failed to send friend request",
+    };
   }
 };
 
