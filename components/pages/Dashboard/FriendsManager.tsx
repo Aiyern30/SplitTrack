@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { toast } from "sonner";
 import {
   Dialog,
   DialogContent,
@@ -69,43 +70,58 @@ export default function FriendsManager() {
   };
 
   const handleSendRequest = async () => {
-    if (!email) return;
-    
+    if (!email) {
+      toast.error("Please enter an email address");
+      return;
+    }
+
     setLoading(true);
     const result = await sendFriendRequest(email);
     setLoading(false);
 
-    alert(result.message);
     if (result.success) {
+      toast.success(result.message);
       setEmail("");
       loadData();
+    } else {
+      toast.error(result.message);
     }
   };
 
   const handleAccept = async (requestId: string) => {
     const result = await acceptFriendRequest(requestId);
-    alert(result.message);
+
     if (result.success) {
+      toast.success(result.message);
       loadData();
+    } else {
+      toast.error(result.message);
     }
   };
 
   const handleDecline = async (requestId: string) => {
     const result = await declineFriendRequest(requestId);
-    alert(result.message);
+
     if (result.success) {
+      toast.info(result.message);
       loadData();
+    } else {
+      toast.error(result.message);
     }
   };
 
   const handleRemove = async (friendId: string) => {
-    if (confirm("Are you sure you want to remove this friend?")) {
-      const result = await removeFriend(friendId);
-      alert(result.message);
-      if (result.success) {
-        loadData();
-      }
-    }
+    toast.promise(removeFriend(friendId), {
+      loading: "Removing friend...",
+      success: (result) => {
+        if (result.success) {
+          loadData();
+          return result.message;
+        }
+        throw new Error(result.message);
+      },
+      error: (err) => err.message || "Failed to remove friend",
+    });
   };
 
   return (
@@ -127,7 +143,9 @@ export default function FriendsManager() {
 
       <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="text-2xl font-bold">Manage Friends</DialogTitle>
+          <DialogTitle className="text-2xl font-bold">
+            Manage Friends
+          </DialogTitle>
         </DialogHeader>
 
         <Tabs defaultValue="friends" className="w-full">
@@ -155,7 +173,9 @@ export default function FriendsManager() {
 
             {filteredFriends.length === 0 ? (
               <div className="text-center py-8 text-gray-500">
-                {searchTerm ? "No friends found" : "No friends yet. Start by adding some!"}
+                {searchTerm
+                  ? "No friends found"
+                  : "No friends yet. Start by adding some!"}
               </div>
             ) : (
               <div className="space-y-2">
@@ -172,13 +192,21 @@ export default function FriendsManager() {
                       </div>
                       <div>
                         <div className="font-semibold">{friend.friendName}</div>
-                        <div className="text-sm text-gray-600">{friend.friendEmail}</div>
+                        <div className="text-sm text-gray-600">
+                          {friend.friendEmail}
+                        </div>
                       </div>
                     </div>
                     <Button
                       variant="destructive"
                       size="sm"
-                      onClick={() => handleRemove(friend.friendId)}
+                      onClick={() => {
+                        if (
+                          confirm(`Remove ${friend.friendName} from friends?`)
+                        ) {
+                          handleRemove(friend.friendId);
+                        }
+                      }}
                     >
                       Remove
                     </Button>
@@ -202,8 +230,12 @@ export default function FriendsManager() {
                     className="flex items-center justify-between p-4 bg-indigo-50 rounded-lg"
                   >
                     <div>
-                      <div className="font-semibold">{request.fromUserName}</div>
-                      <div className="text-sm text-gray-600">{request.fromUserEmail}</div>
+                      <div className="font-semibold">
+                        {request.fromUserName}
+                      </div>
+                      <div className="text-sm text-gray-600">
+                        {request.fromUserEmail}
+                      </div>
                     </div>
                     <div className="flex gap-2">
                       <Button
@@ -228,7 +260,9 @@ export default function FriendsManager() {
 
             {sentRequests.length > 0 && (
               <>
-                <h3 className="font-semibold text-gray-700 mt-6">Sent Requests</h3>
+                <h3 className="font-semibold text-gray-700 mt-6">
+                  Sent Requests
+                </h3>
                 <div className="space-y-2">
                   {sentRequests.map((request) => (
                     <div
@@ -236,7 +270,9 @@ export default function FriendsManager() {
                       className="flex items-center justify-between p-4 bg-gray-50 rounded-lg"
                     >
                       <div>
-                        <div className="font-semibold">{request.toUserEmail}</div>
+                        <div className="font-semibold">
+                          {request.toUserEmail}
+                        </div>
                         <div className="text-sm text-gray-600">Pending...</div>
                       </div>
                       <Badge>Sent</Badge>
@@ -275,8 +311,9 @@ export default function FriendsManager() {
 
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                 <p className="text-sm text-blue-800">
-                  <strong>Tip:</strong> Enter your friend's email address to send them a friend request. 
-                  They'll need to accept it before you can split expenses together.
+                  <strong>Tip:</strong> Enter your friend's email address to
+                  send them a friend request. They'll need to accept it before
+                  you can split expenses together.
                 </p>
               </div>
             </div>

@@ -141,6 +141,24 @@ const Dashboard = () => {
     loadUserNames();
   }, [userIds]); // Only run when userIds change
 
+  const [filteredFriendData, setFilteredFriendData] = useState<DataItem[]>([]); // Add filtered friend data state
+
+  // Filter friend data when selectedUserId changes
+  useEffect(() => {
+    if (selectedUserId && selectedUserId !== "all") {
+      const filtered = friendData
+        .map((dataItem) => ({
+          ...dataItem,
+          items: dataItem.items.filter((item) => item.to === selectedUserId),
+        }))
+        .filter((dataItem) => dataItem.items.length > 0);
+
+      setFilteredFriendData(filtered);
+    } else {
+      setFilteredFriendData(friendData);
+    }
+  }, [selectedUserId, friendData]);
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
@@ -157,7 +175,7 @@ const Dashboard = () => {
   const groupedOwnData = groupByDate(ownData);
   const sortedOwnDates = sortDatesDescending(Object.keys(groupedOwnData));
 
-  const groupedFriendData = groupByDate(friendData);
+  const groupedFriendData = groupByDate(filteredFriendData);
   const sortedFriendDates = sortDatesDescending(Object.keys(groupedFriendData));
   const currentTotal = activeTab === "OWN" ? total : friendTotal;
 

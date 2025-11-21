@@ -1,4 +1,5 @@
 import { db, auth } from "./firebase";
+import { toast } from "sonner";
 import {
   collection,
   addDoc,
@@ -100,9 +101,9 @@ export const sendFriendRequest = async (
     });
 
     return { success: true, message: "Friend request sent successfully" };
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error sending friend request:", error);
-    return { success: false, message: "Failed to send friend request" };
+    return { success: false, message: error.message || "Failed to send friend request" };
   }
 };
 
@@ -287,7 +288,7 @@ export const getFriends = async (): Promise<Friend[]> => {
 // Search friends by name or email
 export const searchFriends = async (searchTerm: string): Promise<Friend[]> => {
   const friends = await getFriends();
-  
+
   if (!searchTerm) return friends;
 
   const term = searchTerm.toLowerCase();

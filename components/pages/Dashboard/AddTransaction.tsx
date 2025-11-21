@@ -1,4 +1,5 @@
 import * as React from "react";
+import { toast } from "sonner";
 import {
   Badge,
   Dialog,
@@ -82,7 +83,7 @@ export default function AddTransaction({ onSuccess }: AddTransactionProps) {
     const user = auth.currentUser;
 
     if (!user) {
-      alert("You must be logged in to add an expense.");
+      toast.error("You must be logged in to add an expense");
       return null;
     }
 
@@ -104,18 +105,18 @@ export default function AddTransaction({ onSuccess }: AddTransactionProps) {
     const user = auth.currentUser;
 
     if (!user) {
-      alert("You must be logged in to add an expense.");
+      toast.error("You must be logged in to add an expense");
       return;
     }
 
     if (!amount || !selectedLabel || !category) {
-      alert("Please fill in all required fields (Amount, Label, Category).");
+      toast.error("Please fill in all required fields");
       return;
     }
 
     const amountValue = Number(amount);
     if (isNaN(amountValue) || amountValue <= 0) {
-      alert("Please provide a valid amount.");
+      toast.error("Please provide a valid amount");
       return;
     }
 
@@ -134,6 +135,8 @@ export default function AddTransaction({ onSuccess }: AddTransactionProps) {
         to: user.uid,
       },
     ];
+
+    const loadingToast = toast.loading("Adding transaction...");
 
     try {
       if (selectedImage) {
@@ -158,10 +161,10 @@ export default function AddTransaction({ onSuccess }: AddTransactionProps) {
         onSuccess();
       }
 
-      alert("Transaction added successfully!");
+      toast.success("Transaction added successfully!", { id: loadingToast });
     } catch (error) {
       console.error("Error adding expense: ", error);
-      alert("Failed to add expense.");
+      toast.error("Failed to add transaction", { id: loadingToast });
     }
   };
 

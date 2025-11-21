@@ -5,6 +5,7 @@ import Link from "next/link";
 import { auth } from "@/lib/firebase";
 import { signInWithPopup, GoogleAuthProvider } from "firebase/auth";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 export default function Header() {
   const router = useRouter();
@@ -14,21 +15,20 @@ export default function Header() {
 
     try {
       await signInWithPopup(auth, provider);
+      toast.success("Successfully signed in!");
       router.push("/Dashboard");
     } catch (error: any) {
-      // Check if user cancelled the popup
       if (
         error.code === "auth/popup-closed-by-user" ||
         error.code === "auth/cancelled-popup-request"
       ) {
         // User closed the popup - don't show error
-        console.log("Sign-in popup was closed by user");
         return;
       }
 
       // Show error only for actual failures
       console.error("Error signing in with Google: ", error);
-      alert("Failed to sign in. Please try again.");
+      toast.error("Failed to sign in. Please try again.");
     }
   };
 

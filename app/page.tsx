@@ -6,6 +6,7 @@ import { ArrowRight, CheckCircle } from "lucide-react";
 import { auth } from "@/lib/firebase";
 import { signInWithPopup, GoogleAuthProvider } from "firebase/auth";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 export default function Home() {
   const router = useRouter();
@@ -15,6 +16,7 @@ export default function Home() {
 
     try {
       await signInWithPopup(auth, provider);
+      toast.success("Welcome to SplitTrack!");
       router.push("/Dashboard");
     } catch (error: any) {
       // Check if user cancelled the popup
@@ -29,7 +31,7 @@ export default function Home() {
 
       // Show error only for actual failures
       console.error("Error signing in with Google: ", error);
-      alert("Failed to sign in. Please try again.");
+      toast.error("Failed to sign in. Please try again.");
     }
   };
 
