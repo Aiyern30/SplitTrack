@@ -91,7 +91,9 @@ const addExpenseToFirestore = async (
   cache.friendExpenses = null;
 };
 
-const fetchExpensesFromFirestore = async (forceRefresh = false): Promise<DataItem[]> => {
+const fetchExpensesFromFirestore = async (
+  forceRefresh = false
+): Promise<DataItem[]> => {
   const now = Date.now();
 
   // Return cached data if available and not expired
@@ -126,7 +128,9 @@ const fetchExpensesFromFirestore = async (forceRefresh = false): Promise<DataIte
   return expenses;
 };
 
-const fetchExpensesWithFriends = async (forceRefresh = false): Promise<DataItem[]> => {
+const fetchExpensesWithFriends = async (
+  forceRefresh = false
+): Promise<DataItem[]> => {
   const now = Date.now();
 
   // Return cached data if available and not expired
