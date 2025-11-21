@@ -14,7 +14,8 @@ import {
   or,
 } from "firebase/firestore";
 
-interface FriendRequest {
+// Export interfaces for use in other components
+export interface FriendRequest {
   id?: string;
   fromUserId: string;
   fromUserName: string;
@@ -25,7 +26,7 @@ interface FriendRequest {
   createdAt: any;
 }
 
-interface Friend {
+export interface Friend {
   id: string;
   userId: string;
   friendId: string;

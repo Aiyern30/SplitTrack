@@ -25,6 +25,7 @@ import OwnTabContent from "@/components/pages/Dashboard/ownTabContent";
 import FriendTabContent from "@/components/pages/Dashboard/friendTabContent";
 import { fetchUserNames } from "@/lib/firestoreService"; // Import fetchUserNames
 import FriendsManager from "@/components/pages/Dashboard/FriendsManager";
+import { getFriends } from "@/lib/friendService";
 
 const groupByDate = (data: DataItem[]): Record<string, Item[]> => {
   return data.reduce((acc: Record<string, Item[]>, curr: DataItem) => {
@@ -52,6 +53,8 @@ const Dashboard = () => {
   const [friendTotal, setFriendTotal] = useState(0);
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null); // State for selected user ID
   const [userNames, setUserNames] = useState<{ [key: string]: string }>({}); // State for user names
+  const [friends, setFriends] = useState<any[]>([]); // Add friends state
+  const [filteredFriendData, setFilteredFriendData] = useState<DataItem[]>([]);
 
   // Track which tabs have been loaded
   const [loadedTabs, setLoadedTabs] = useState<Set<string>>(new Set());
@@ -141,7 +144,17 @@ const Dashboard = () => {
     loadUserNames();
   }, [userIds]); // Only run when userIds change
 
-  const [filteredFriendData, setFilteredFriendData] = useState<DataItem[]>([]); // Add filtered friend data state
+  // Load friends list when FRIENDS tab is accessed
+  useEffect(() => {
+    const loadFriendsList = async () => {
+      if (auth && activeTab === "FRIENDS") {
+        const friendsList = await getFriends();
+        setFriends(friendsList);
+      }
+    };
+
+    loadFriendsList();
+  }, [auth, activeTab]);
 
   // Filter friend data when selectedUserId changes
   useEffect(() => {
@@ -227,7 +240,7 @@ const Dashboard = () => {
                     </TabsTrigger>
                   </TabsList>
 
-                  {activeTab === "FRIENDS" && (
+                  {activeTab === "FRIENDS" && friends.length > 0 && (
                     <div className="flex justify-center sm:justify-end">
                       <Select onValueChange={handleSelectChange}>
                         <SelectTrigger className="w-full sm:w-[220px] bg-white/95 backdrop-blur border-white/50 focus:ring-2 focus:ring-white/50">
@@ -235,9 +248,9 @@ const Dashboard = () => {
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="all">All Friends</SelectItem>
-                          {userIds.map((userId) => (
-                            <SelectItem key={userId} value={userId}>
-                              {userNames[userId] || "Unknown User"}
+                          {friends.map((friend) => (
+                            <SelectItem key={friend.friendId} value={friend.friendId}>
+                              {friend.friendName}
                             </SelectItem>
                           ))}
                         </SelectContent>
