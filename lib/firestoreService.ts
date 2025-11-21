@@ -64,6 +64,17 @@ const fetchUserNames = async (userIds: string[]) => {
   return userNames;
 };
 
+// Simple in-memory cache
+const cache = {
+  ownExpenses: null as DataItem[] | null,
+  friendExpenses: null as DataItem[] | null,
+  lastFetch: {
+    own: 0,
+    friend: 0,
+  },
+  CACHE_DURATION: 30000, // 30 seconds
+};
+
 const addExpenseToFirestore = async (
   date: string,
   items: Item[]
@@ -74,9 +85,24 @@ const addExpenseToFirestore = async (
     items,
     userId: currentUser?.uid || "",
   });
+
+  // Invalidate cache after adding new expense
+  cache.ownExpenses = null;
+  cache.friendExpenses = null;
 };
 
-const fetchExpensesFromFirestore = async (): Promise<DataItem[]> => {
+const fetchExpensesFromFirestore = async (forceRefresh = false): Promise<DataItem[]> => {
+  const now = Date.now();
+
+  // Return cached data if available and not expired
+  if (
+    !forceRefresh &&
+    cache.ownExpenses &&
+    now - cache.lastFetch.own < cache.CACHE_DURATION
+  ) {
+    return cache.ownExpenses;
+  }
+
   const currentUser = auth.currentUser;
   const expensesCollection = collection(db, "ownExpenses");
   const q = query(
@@ -93,10 +119,25 @@ const fetchExpensesFromFirestore = async (): Promise<DataItem[]> => {
     })),
   }));
 
+  // Update cache
+  cache.ownExpenses = expenses;
+  cache.lastFetch.own = now;
+
   return expenses;
 };
 
-const fetchExpensesWithFriends = async (): Promise<DataItem[]> => {
+const fetchExpensesWithFriends = async (forceRefresh = false): Promise<DataItem[]> => {
+  const now = Date.now();
+
+  // Return cached data if available and not expired
+  if (
+    !forceRefresh &&
+    cache.friendExpenses &&
+    now - cache.lastFetch.friend < cache.CACHE_DURATION
+  ) {
+    return cache.friendExpenses;
+  }
+
   const currentUser = auth.currentUser;
   const userId = currentUser?.uid || "";
   const expensesCollection = collection(db, "ownExpenses");
@@ -113,6 +154,10 @@ const fetchExpensesWithFriends = async (): Promise<DataItem[]> => {
       };
     })
     .filter((expense) => expense.items.length > 0);
+
+  // Update cache
+  cache.friendExpenses = expensesWithFriends;
+  cache.lastFetch.friend = now;
 
   return expensesWithFriends;
 };

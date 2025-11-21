@@ -45,62 +45,80 @@ const Dashboard = () => {
 
   const [ownData, setOwnData] = useState<DataItem[]>([]);
   const [friendData, setFriendData] = useState<DataItem[]>([]);
-  const [loadingData, setLoadingData] = useState(true);
+  const [loadingData, setLoadingData] = useState(false);
   const [activeTab, setActiveTab] = useState("OWN");
   const [total, setTotal] = useState(0);
   const [friendTotal, setFriendTotal] = useState(0);
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null); // State for selected user ID
-  console.log("selectedUserId", selectedUserId);
   const [userNames, setUserNames] = useState<{ [key: string]: string }>({}); // State for user names
+
+  // Track which tabs have been loaded
+  const [loadedTabs, setLoadedTabs] = useState<Set<string>>(new Set());
+
   const handleSelectChange = (value: string) => {
     setSelectedUserId(value);
   };
+
+  // Load OWN data on initial mount
   useEffect(() => {
-    const loadData = async () => {
-      try {
-        if (auth) {
-          const expenses = await fetchExpensesFromFirestore();
-          setOwnData(expenses);
-
-          const friendExpenses = await fetchExpensesWithFriends();
-          setFriendData(friendExpenses);
-        }
-      } catch (error) {
-        console.error("Error fetching data: ", error);
-      } finally {
-        setLoadingData(false);
-      }
-    };
-
-    loadData();
+    if (auth && !loadedTabs.has("OWN")) {
+      loadOwnData();
+    }
   }, [auth]);
 
-  const refreshData = async () => {
+  // Load data when switching tabs
+  useEffect(() => {
+    if (auth && activeTab === "FRIENDS" && !loadedTabs.has("FRIENDS")) {
+      loadFriendData();
+    }
+  }, [activeTab, auth]);
+
+  const loadOwnData = async () => {
+    if (loadingData) return; // Prevent multiple simultaneous loads
+
     setLoadingData(true);
     try {
-      if (auth) {
-        const expenses = await fetchExpensesFromFirestore();
-        setOwnData(expenses);
-        const friendExpenses = await fetchExpensesWithFriends();
-        setFriendData(friendExpenses);
-      }
+      const expenses = await fetchExpensesFromFirestore();
+      setOwnData(expenses);
+      setLoadedTabs((prev) => new Set(prev).add("OWN"));
     } catch (error) {
-      console.error("Error refreshing data: ", error);
+      console.error("Error fetching own data: ", error);
     } finally {
       setLoadingData(false);
     }
   };
 
-  // Memoize userIds to avoid unnecessary recalculation and re-rendering
+  const loadFriendData = async () => {
+    if (loadingData) return; // Prevent multiple simultaneous loads
+
+    setLoadingData(true);
+    try {
+      const friendExpenses = await fetchExpensesWithFriends();
+      setFriendData(friendExpenses);
+      setLoadedTabs((prev) => new Set(prev).add("FRIENDS"));
+    } catch (error) {
+      console.error("Error fetching friend data: ", error);
+    } finally {
+      setLoadingData(false);
+    }
+  };
+
+  const refreshData = async () => {
+    if (activeTab === "OWN") {
+      await loadOwnData();
+    } else if (activeTab === "FRIENDS") {
+      await loadFriendData();
+    }
+  };
+
   const userIds = useMemo(
     () =>
       friendData
         .map((item) => item.items[0]?.to)
-        .filter((id, i, self) => id && self.indexOf(id) === i), // Ensure valid ids
+        .filter((id, i, self) => id && self.indexOf(id) === i),
     [friendData]
   );
 
-  // Fetch user names based on userIds
   useEffect(() => {
     const loadUserNames = async () => {
       if (userIds.length > 0) {
@@ -122,7 +140,7 @@ const Dashboard = () => {
     loadUserNames();
   }, [userIds]); // Only run when userIds change
 
-  if (loading || loadingData)
+  if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
         <div className="text-center">
@@ -131,6 +149,8 @@ const Dashboard = () => {
         </div>
       </div>
     );
+  }
+
   if (!auth) return null;
 
   const groupedOwnData = groupByDate(ownData);
@@ -204,7 +224,12 @@ const Dashboard = () => {
               </div>
 
               <TabsContent value="OWN" className="p-4 sm:p-6 mt-0">
-                {sortedOwnDates.length === 0 ? (
+                {loadingData && !loadedTabs.has("OWN") ? (
+                  <div className="text-center py-16">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto mb-4"></div>
+                    <p className="text-gray-600">Loading transactions...</p>
+                  </div>
+                ) : sortedOwnDates.length === 0 ? (
                   <div className="text-center py-16">
                     <div className="text-gray-400 text-5xl mb-4">📊</div>
                     <h3 className="text-lg font-semibold text-gray-700 mb-2">
@@ -224,7 +249,14 @@ const Dashboard = () => {
               </TabsContent>
 
               <TabsContent value="FRIENDS" className="p-4 sm:p-6 mt-0">
-                {sortedFriendDates.length === 0 ? (
+                {loadingData && !loadedTabs.has("FRIENDS") ? (
+                  <div className="text-center py-16">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto mb-4"></div>
+                    <p className="text-gray-600">
+                      Loading friend transactions...
+                    </p>
+                  </div>
+                ) : sortedFriendDates.length === 0 ? (
                   <div className="text-center py-16">
                     <div className="text-gray-400 text-5xl mb-4">👥</div>
                     <h3 className="text-lg font-semibold text-gray-700 mb-2">
