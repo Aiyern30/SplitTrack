@@ -46,7 +46,10 @@ interface AddTransactionProps {
   activeTab?: string; // Add activeTab prop to know which tab we're on
 }
 
-export default function AddTransaction({ onSuccess, activeTab = "OWN" }: AddTransactionProps) {
+export default function AddTransaction({
+  onSuccess,
+  activeTab = "OWN",
+}: AddTransactionProps) {
   const [amount, setAmount] = useState<number | string>("");
   const [noteText, setNoteText] = useState("");
   const [selectedLabel, setSelectedLabel] = useState<string>("");
@@ -192,9 +195,9 @@ export default function AddTransaction({ onSuccess, activeTab = "OWN" }: AddTran
       }
 
       toast.success(
-        activeTab === "FRIENDS" 
-          ? "Transaction split with friend successfully!" 
-          : "Transaction added successfully!", 
+        activeTab === "FRIENDS"
+          ? "Transaction split with friend successfully!"
+          : "Transaction added successfully!",
         { id: loadingToast }
       );
     } catch (error) {
@@ -223,7 +226,9 @@ export default function AddTransaction({ onSuccess, activeTab = "OWN" }: AddTran
       <DrawerContent className="max-h-[80vh]">
         <DrawerHeader className="border-b border-gray-200 bg-gradient-to-r from-indigo-50 to-purple-50 py-4">
           <DrawerTitle className="text-center text-2xl font-bold text-gray-800">
-            {activeTab === "FRIENDS" ? "Split with Friend" : "Add New Transaction"}
+            {activeTab === "FRIENDS"
+              ? "Split with Friend"
+              : "Add New Transaction"}
           </DrawerTitle>
         </DrawerHeader>
 
@@ -235,7 +240,10 @@ export default function AddTransaction({ onSuccess, activeTab = "OWN" }: AddTran
                 <Users className="w-4 h-4 text-indigo-600" />
                 Split With <span className="text-red-500">*</span>
               </Label>
-              <Select value={selectedFriend || ""} onValueChange={setSelectedFriend}>
+              <Select
+                value={selectedFriend || ""}
+                onValueChange={setSelectedFriend}
+              >
                 <SelectTrigger className="h-12 border-2 border-gray-300 focus:border-indigo-500 rounded-xl">
                   <SelectValue placeholder="Select a friend to split with" />
                 </SelectTrigger>
@@ -254,8 +262,12 @@ export default function AddTransaction({ onSuccess, activeTab = "OWN" }: AddTran
                             </span>
                           </div>
                           <div>
-                            <div className="font-medium">{friend.friendName}</div>
-                            <div className="text-xs text-gray-500">{friend.friendEmail}</div>
+                            <div className="font-medium">
+                              {friend.friendName}
+                            </div>
+                            <div className="text-xs text-gray-500">
+                              {friend.friendEmail}
+                            </div>
                           </div>
                         </div>
                       </SelectItem>
@@ -268,7 +280,10 @@ export default function AddTransaction({ onSuccess, activeTab = "OWN" }: AddTran
                   <p className="text-sm text-indigo-700">
                     💡 This transaction will be split with{" "}
                     <span className="font-semibold">
-                      {friends.find((f) => f.friendId === selectedFriend)?.friendName}
+                      {
+                        friends.find((f) => f.friendId === selectedFriend)
+                          ?.friendName
+                      }
                     </span>
                   </p>
                 </div>
@@ -472,9 +487,9 @@ export default function AddTransaction({ onSuccess, activeTab = "OWN" }: AddTran
           <Button
             onClick={handleSubmit}
             disabled={
-              !amount || 
-              !selectedLabel || 
-              !category || 
+              !amount ||
+              !selectedLabel ||
+              !category ||
               (activeTab === "FRIENDS" && !selectedFriend)
             }
             className="flex-1 h-12 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 disabled:from-gray-400 disabled:to-gray-500 disabled:cursor-not-allowed text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all"
