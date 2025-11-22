@@ -6,6 +6,7 @@ import { auth } from "@/lib/firebase";
 import { signInWithPopup, GoogleAuthProvider } from "firebase/auth";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { createUserProfile } from "@/lib/firestoreService";
 
 export default function Header() {
   const router = useRouter();
@@ -14,7 +15,16 @@ export default function Header() {
     const provider = new GoogleAuthProvider();
 
     try {
-      await signInWithPopup(auth, provider);
+      const result = await signInWithPopup(auth, provider);
+
+      // Create user profile in Firestore if it doesn't exist
+      await createUserProfile({
+        uid: result.user.uid,
+        displayName: result.user.displayName || undefined,
+        email: result.user.email || undefined,
+        photoURL: result.user.photoURL || undefined,
+      });
+
       toast.success("Successfully signed in!");
       router.push("/Dashboard");
     } catch (error: any) {
@@ -22,11 +32,9 @@ export default function Header() {
         error.code === "auth/popup-closed-by-user" ||
         error.code === "auth/cancelled-popup-request"
       ) {
-        // User closed the popup - don't show error
         return;
       }
 
-      // Show error only for actual failures
       console.error("Error signing in with Google: ", error);
       toast.error("Failed to sign in. Please try again.");
     }

@@ -23,6 +23,8 @@ export const metadata: Metadata = {
     shortcut: "/Logo.png",
     apple: "/Logo.png",
   },
+  manifest: "/manifest.json",
+  themeColor: "#6366f1",
 };
 
 export default function RootLayout({
