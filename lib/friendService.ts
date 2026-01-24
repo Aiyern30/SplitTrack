@@ -302,3 +302,37 @@ export const searchFriends = async (searchTerm: string): Promise<Friend[]> => {
       friend.friendEmail.toLowerCase().includes(term)
   );
 };
+
+// Cancel a sent friend request by requestId
+export async function cancelFriendRequest(
+  requestId: string
+): Promise<{ success: boolean; message: string }> {
+  const currentUser = auth.currentUser;
+  if (!currentUser) {
+    return { success: false, message: "You must be logged in" };
+  }
+
+  try {
+    const requestRef = doc(db, "friendRequests", requestId);
+    const requestSnap = await getDoc(requestRef);
+
+    if (!requestSnap.exists()) {
+      return { success: false, message: "Friend request not found" };
+    }
+
+    const requestData = requestSnap.data() as FriendRequest;
+
+    // Verify the current user is the sender
+    if (requestData.fromUserId !== currentUser.uid) {
+      return { success: false, message: "You can only cancel your own requests" };
+    }
+
+    // Delete the friend request
+    await deleteDoc(requestRef);
+
+    return { success: true, message: "Friend request canceled" };
+  } catch (error) {
+    console.error("Error canceling friend request:", error);
+    return { success: false, message: "Failed to cancel friend request" };
+  }
+}

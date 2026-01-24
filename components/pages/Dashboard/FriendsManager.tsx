@@ -34,6 +34,7 @@ import {
   getFriends,
   removeFriend,
   searchFriends,
+  cancelFriendRequest,
 } from "@/lib/friendService";
 
 export default function FriendsManager() {
@@ -133,6 +134,20 @@ export default function FriendsManager() {
     }
 
     setFriendToRemove(null);
+  };
+
+  // ADD: Cancel sent friend request
+  const handleCancelSentRequest = async (requestId: string) => {
+    setLoading(true);
+    const result = await cancelFriendRequest(requestId);
+    setLoading(false);
+
+    if (result.success) {
+      toast.info(result.message || "Friend request canceled.");
+      loadData();
+    } else {
+      toast.error(result.message || "Failed to cancel request.");
+    }
   };
 
   return (
@@ -289,7 +304,20 @@ export default function FriendsManager() {
                             Pending...
                           </div>
                         </div>
-                        <Badge>Sent</Badge>
+                        <div className="flex gap-2 items-center">
+                          <Badge>Sent</Badge>
+                          {/* ADD: Cancel button */}
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            disabled={loading}
+                            onClick={() => handleCancelSentRequest(request.id)}
+                            className="text-red-600 border-red-300 hover:bg-red-50"
+                          >
+                            <X className="w-4 h-4 mr-1" />
+                            Cancel
+                          </Button>
+                        </div>
                       </div>
                     ))}
                   </div>
