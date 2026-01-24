@@ -44,7 +44,7 @@ export default function RenderIcon({ category, type }: IconProps) {
   const getIconForCategory = (category: string, type: IconProps["type"]) => {
     const iconsArray = type === "income" ? incomeIcons : expensesIcons;
     const iconObj = iconsArray.find(
-      (icon) => icon.category.toLowerCase() === category.toLowerCase()
+      (icon) => icon.category.toLowerCase() === category.toLowerCase(),
     );
     return iconObj ? iconObj.icon : <CiCircleQuestion size={30} />;
   };

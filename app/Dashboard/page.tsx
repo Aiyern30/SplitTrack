@@ -20,12 +20,14 @@ import AddTransaction from "@/components/pages/Dashboard/AddTransaction";
 import {
   fetchExpensesFromFirestore,
   fetchExpensesWithFriends,
+  fetchGroupExpenses, // ADD THIS
 } from "@/lib/firestoreService";
 import OwnTabContent from "@/components/pages/Dashboard/ownTabContent";
 import FriendTabContent from "@/components/pages/Dashboard/friendTabContent";
 import { fetchUserNames } from "@/lib/firestoreService"; // Import fetchUserNames
 import FriendsManager from "@/components/pages/Dashboard/FriendsManager";
 import { getFriends } from "@/lib/friendService";
+import { getUserGroups } from "@/lib/groupService";
 
 const groupByDate = (data: DataItem[]): Record<string, Item[]> => {
   return data.reduce((acc: Record<string, Item[]>, curr: DataItem) => {
@@ -47,6 +49,7 @@ const Dashboard = () => {
 
   const [ownData, setOwnData] = useState<DataItem[]>([]);
   const [friendData, setFriendData] = useState<DataItem[]>([]);
+  const [groupData, setGroupData] = useState<DataItem[]>([]); // State for group data
   const [loadingData, setLoadingData] = useState(false);
   const [activeTab, setActiveTab] = useState("OWN");
   const [total, setTotal] = useState(0);
@@ -54,6 +57,7 @@ const Dashboard = () => {
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null); // State for selected user ID
   const [userNames, setUserNames] = useState<{ [key: string]: string }>({}); // State for user names
   const [friends, setFriends] = useState<any[]>([]); // Add friends state
+  const [groups, setGroups] = useState<any[]>([]); // State for user groups
   const [filteredFriendData, setFilteredFriendData] = useState<DataItem[]>([]);
 
   // Track which tabs have been loaded
@@ -74,6 +78,8 @@ const Dashboard = () => {
   useEffect(() => {
     if (auth && activeTab === "FRIENDS" && !loadedTabs.has("FRIENDS")) {
       loadFriendData();
+    } else if (auth && activeTab === "GROUPS" && !loadedTabs.has("GROUPS")) {
+      loadGroupData();
     }
   }, [activeTab, auth]);
 
@@ -107,11 +113,32 @@ const Dashboard = () => {
     }
   };
 
+  const loadGroupData = async () => {
+    if (loadingData) return;
+
+    setLoadingData(true);
+    try {
+      const [groupsList, groupExpenses] = await Promise.all([
+        getUserGroups(),
+        fetchGroupExpenses(), // Use the real function now
+      ]);
+      setGroups(groupsList);
+      setGroupData(groupExpenses);
+      setLoadedTabs((prev) => new Set(prev).add("GROUPS"));
+    } catch (error) {
+      console.error("Error fetching group data: ", error);
+    } finally {
+      setLoadingData(false);
+    }
+  };
+
   const refreshData = async () => {
     if (activeTab === "OWN") {
       await loadOwnData();
     } else if (activeTab === "FRIENDS") {
       await loadFriendData();
+    } else if (activeTab === "GROUPS") {
+      await loadGroupData();
     }
   };
 
@@ -119,8 +146,8 @@ const Dashboard = () => {
     () =>
       friendData
         .map((item) => item.items[0]?.to)
-        .filter((id, i, self) => id && self.indexOf(id) === i),
-    [friendData]
+        .filter((id): id is string => !!id), // Type guard to filter out undefined and ensure string[]
+    [friendData],
   );
 
   useEffect(() => {
@@ -132,7 +159,7 @@ const Dashboard = () => {
             Object.entries(names).map(([id, name]) => [
               id,
               name || "Unknown User",
-            ]) // Fallback if name is missing
+            ]), // Fallback if name is missing
           );
           setUserNames(sanitizedNames);
         } catch (error) {
@@ -190,6 +217,8 @@ const Dashboard = () => {
 
   const groupedFriendData = groupByDate(filteredFriendData);
   const sortedFriendDates = sortDatesDescending(Object.keys(groupedFriendData));
+  const groupedGroupData = groupByDate(groupData); // Grouping logic for group data
+  const sortedGroupDates = sortDatesDescending(Object.keys(groupedGroupData)); // Sorting logic for group data
   const currentTotal = activeTab === "OWN" ? total : friendTotal;
 
   return (
@@ -317,15 +346,31 @@ const Dashboard = () => {
               </TabsContent>
 
               <TabsContent value="GROUPS" className="p-4 sm:p-6 mt-0">
-                <div className="text-center py-16">
-                  <div className="text-gray-400 text-5xl mb-4">👨‍👩‍👧‍👦</div>
-                  <h3 className="text-lg font-semibold text-gray-700 mb-2">
-                    Groups coming soon
-                  </h3>
-                  <p className="text-gray-500 text-sm">
-                    Split expenses with multiple people at once
-                  </p>
-                </div>
+                {loadingData && !loadedTabs.has("GROUPS") ? (
+                  <div className="text-center py-16">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto mb-4"></div>
+                    <p className="text-gray-600">
+                      Loading group transactions...
+                    </p>
+                  </div>
+                ) : sortedGroupDates.length === 0 ? (
+                  <div className="text-center py-16">
+                    <div className="text-gray-400 text-5xl mb-4">👨‍👩‍👧‍👦</div>
+                    <h3 className="text-lg font-semibold text-gray-700 mb-2">
+                      No group transactions
+                    </h3>
+                    <p className="text-gray-500 text-sm">
+                      Add expenses to groups to see them here
+                    </p>
+                  </div>
+                ) : (
+                  <FriendTabContent
+                    groupedData={groupedGroupData}
+                    sortedDates={sortedGroupDates}
+                    onTotalChange={(newTotal) => setFriendTotal(newTotal)}
+                    currentUserId={currentUserId}
+                  />
+                )}
               </TabsContent>
 
               <TabsContent value="ACTIVITY" className="p-4 sm:p-6 mt-0">

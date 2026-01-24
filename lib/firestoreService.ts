@@ -17,7 +17,12 @@ interface Item {
   description: string | null;
   price: number;
   imageUrl?: string;
-  to: string;
+  to?: string;
+  groupId?: string; // ADD THIS
+  groupName?: string; // ADD THIS
+  splitWith?: string[]; // ADD THIS
+  paidBy?: string; // ADD THIS
+  yourShare?: number; // ADD THIS
 }
 
 interface DataItem {
@@ -77,7 +82,7 @@ const cache = {
 
 const addExpenseToFirestore = async (
   date: string,
-  items: Item[]
+  items: Item[],
 ): Promise<void> => {
   const currentUser = auth.currentUser;
   await addDoc(collection(db, "ownExpenses"), {
@@ -92,7 +97,7 @@ const addExpenseToFirestore = async (
 };
 
 const fetchExpensesFromFirestore = async (
-  forceRefresh = false
+  forceRefresh = false,
 ): Promise<DataItem[]> => {
   const now = Date.now();
 
@@ -109,7 +114,7 @@ const fetchExpensesFromFirestore = async (
   const expensesCollection = collection(db, "ownExpenses");
   const q = query(
     expensesCollection,
-    where("userId", "==", currentUser?.uid || "")
+    where("userId", "==", currentUser?.uid || ""),
   );
   const expenseDocs = await getDocs(q);
 
@@ -129,7 +134,7 @@ const fetchExpensesFromFirestore = async (
 };
 
 const fetchExpensesWithFriends = async (
-  forceRefresh = false
+  forceRefresh = false,
 ): Promise<DataItem[]> => {
   const now = Date.now();
 
@@ -166,10 +171,36 @@ const fetchExpensesWithFriends = async (
   return expensesWithFriends;
 };
 
+const fetchGroupExpenses = async (
+  forceRefresh = false,
+): Promise<DataItem[]> => {
+  const currentUser = auth.currentUser;
+  const userId = currentUser?.uid || "";
+
+  // Query expenses collection where user is part of a group
+  const expensesCollection = collection(db, "ownExpenses");
+  const q = query(expensesCollection, where("userId", "==", userId));
+
+  const expenseDocs = await getDocs(q);
+
+  const groupExpenses: DataItem[] = expenseDocs.docs
+    .map((doc) => {
+      const data = doc.data();
+      return {
+        date: data.date,
+        items: data.items.filter((item: Item) => item.groupId), // Only items with groupId
+      };
+    })
+    .filter((expense) => expense.items.length > 0);
+
+  return groupExpenses;
+};
+
 export {
   addExpenseToFirestore,
   fetchExpensesFromFirestore,
   fetchExpensesWithFriends,
+  fetchGroupExpenses,
   createUserProfile,
   fetchUserNames,
 };
