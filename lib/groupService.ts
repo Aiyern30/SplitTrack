@@ -45,7 +45,7 @@ export interface GroupInvitation {
   createdAt: any;
 }
 
-// Get user's groups
+// Get user's groups with memberIds migration
 export const getUserGroups = async (): Promise<Group[]> => {
   const currentUser = auth.currentUser;
   if (!currentUser) return [];
@@ -55,15 +55,34 @@ export const getUserGroups = async (): Promise<Group[]> => {
     const snapshot = await getDocs(groupsRef);
 
     const groups = snapshot.docs
-      .map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      }))
-      .filter((group: any) =>
-        group.members.some(
-          (member: GroupMember) => member.userId === currentUser.uid,
-        ),
-      ) as Group[];
+      .map((doc) => {
+        const data = doc.data();
+        return {
+          id: doc.id,
+          ...data,
+          // Ensure memberIds exists for backward compatibility
+          memberIds:
+            data.memberIds ||
+            data.members?.map((m: GroupMember) => m.userId) ||
+            [],
+        } as Group;
+      })
+      .filter(
+        (group: Group) =>
+          group.members.some(
+            (member: GroupMember) => member.userId === currentUser.uid,
+          ),
+      );
+
+    // Migrate groups without memberIds
+    for (const group of groups) {
+      if (!group.memberIds || group.memberIds.length === 0) {
+        const groupRef = doc(db, "groups", group.id!);
+        await updateDoc(groupRef, {
+          memberIds: group.members.map((m) => m.userId),
+        }).catch((err) => console.log("Migration skipped:", err));
+      }
+    }
 
     return groups;
   } catch (error) {

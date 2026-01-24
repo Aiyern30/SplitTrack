@@ -52,22 +52,27 @@ export default function GroupsManager() {
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [groups, setGroups] = useState<Group[]>([]);
-  const [pendingInvitations, setPendingInvitations] = useState<GroupInvitation[]>([]);
+  const [pendingInvitations, setPendingInvitations] = useState<
+    GroupInvitation[]
+  >([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [filteredGroups, setFilteredGroups] = useState<Group[]>([]);
-  
+
   // Create group state
   const [newGroupName, setNewGroupName] = useState("");
   const [newGroupDescription, setNewGroupDescription] = useState("");
-  
+
   // Invite member state
   const [showInviteDialog, setShowInviteDialog] = useState(false);
   const [selectedGroup, setSelectedGroup] = useState<Group | null>(null);
   const [inviteEmail, setInviteEmail] = useState("");
   const [friends, setFriends] = useState<any[]>([]);
-  
+
   // Confirmation dialogs
-  const [groupToLeave, setGroupToLeave] = useState<{ id: string; name: string } | null>(null);
+  const [groupToLeave, setGroupToLeave] = useState<{
+    id: string;
+    name: string;
+  } | null>(null);
 
   useEffect(() => {
     if (isOpen) {
@@ -98,8 +103,8 @@ export default function GroupsManager() {
         groups.filter(
           (group) =>
             group.name.toLowerCase().includes(term) ||
-            group.description?.toLowerCase().includes(term)
-        )
+            group.description?.toLowerCase().includes(term),
+        ),
       );
     } else {
       setFilteredGroups(groups);
@@ -183,7 +188,7 @@ export default function GroupsManager() {
   const isUserAdmin = (group: Group) => {
     const currentUserId = getCurrentUserId();
     return group.members.some(
-      (m) => m.userId === currentUserId && m.role === "admin"
+      (m) => m.userId === currentUserId && m.role === "admin",
     );
   };
 
@@ -204,7 +209,9 @@ export default function GroupsManager() {
 
         <DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="text-2xl font-bold">Manage Groups</DialogTitle>
+            <DialogTitle className="text-2xl font-bold">
+              Manage Groups
+            </DialogTitle>
           </DialogHeader>
 
           <Tabs defaultValue="myGroups" className="w-full">
@@ -283,7 +290,10 @@ export default function GroupsManager() {
                               size="sm"
                               variant="outline"
                               onClick={() =>
-                                setGroupToLeave({ id: group.id!, name: group.name })
+                                setGroupToLeave({
+                                  id: group.id!,
+                                  name: group.name,
+                                })
                               }
                               className="text-red-600 border-red-300"
                             >
@@ -344,7 +354,9 @@ export default function GroupsManager() {
                       className="flex items-center justify-between p-4 bg-purple-50 rounded-lg"
                     >
                       <div>
-                        <div className="font-semibold">{invitation.groupName}</div>
+                        <div className="font-semibold">
+                          {invitation.groupName}
+                        </div>
                         <div className="text-sm text-gray-600">
                           Invited by {invitation.fromUserName}
                         </div>
@@ -360,7 +372,9 @@ export default function GroupsManager() {
                         <Button
                           size="sm"
                           variant="destructive"
-                          onClick={() => handleDeclineInvitation(invitation.id!)}
+                          onClick={() =>
+                            handleDeclineInvitation(invitation.id!)
+                          }
                         >
                           <X className="w-4 h-4" />
                         </Button>
