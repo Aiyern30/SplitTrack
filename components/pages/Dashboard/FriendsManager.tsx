@@ -50,6 +50,10 @@ export default function FriendsManager() {
     id: string;
     name: string;
   } | null>(null);
+  const [cancelRequest, setCancelRequest] = useState<{
+    id: string;
+    email: string;
+  } | null>(null);
 
   useEffect(() => {
     if (isOpen) {
@@ -306,12 +310,17 @@ export default function FriendsManager() {
                         </div>
                         <div className="flex gap-2 items-center">
                           <Badge>Sent</Badge>
-                          {/* ADD: Cancel button */}
+                          {/* Open confirmation dialog on click */}
                           <Button
                             size="sm"
                             variant="outline"
                             disabled={loading}
-                            onClick={() => handleCancelSentRequest(request.id)}
+                            onClick={() =>
+                              setCancelRequest({
+                                id: request.id,
+                                email: request.toUserEmail,
+                              })
+                            }
                             className="text-red-600 border-red-300 hover:bg-red-50"
                           >
                             <X className="w-4 h-4 mr-1" />
@@ -436,6 +445,42 @@ export default function FriendsManager() {
             >
               <Trash2 className="w-4 h-4 mr-2" />
               Remove Friend
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Cancel Sent Request Confirmation Dialog */}
+      <AlertDialog
+        open={!!cancelRequest}
+        onOpenChange={(open) => !open && setCancelRequest(null)}
+      >
+        <AlertDialogContent className="sm:max-w-[400px] bg-white">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-lg font-bold text-gray-900">
+              Cancel Friend Request?
+            </AlertDialogTitle>
+          </AlertDialogHeader>
+          <AlertDialogDescription className="py-2">
+            Are you sure you want to cancel the friend request to
+            <span className="font-semibold text-indigo-700"> {cancelRequest?.email}</span>?
+            <br />
+            This action cannot be undone.
+          </AlertDialogDescription>
+          <AlertDialogFooter className="gap-2 mt-2">
+            <AlertDialogCancel
+              className="w-full sm:w-auto h-10 border-gray-300 font-semibold text-gray-700 rounded-lg"
+            >
+              No, Keep Request
+            </AlertDialogCancel>
+            <AlertDialogAction
+              className="w-full sm:w-auto h-10 bg-gradient-to-r from-red-600 to-red-700 font-semibold rounded-lg"
+              onClick={() => {
+                if (cancelRequest) handleCancelSentRequest(cancelRequest.id);
+                setCancelRequest(null);
+              }}
+            >
+              Yes, Cancel Request
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

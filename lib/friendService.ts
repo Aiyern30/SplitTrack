@@ -37,7 +37,7 @@ export interface Friend {
 
 // Send a friend request
 export const sendFriendRequest = async (
-  toUserEmail: string
+  toUserEmail: string,
 ): Promise<{ success: boolean; message: string }> => {
   const currentUser = auth.currentUser;
 
@@ -68,7 +68,7 @@ export const sendFriendRequest = async (
     const existingFriendship = query(
       friendsRef,
       where("userId", "==", currentUser.uid),
-      where("friendId", "==", toUserId)
+      where("friendId", "==", toUserId),
     );
     const friendshipSnapshot = await getDocs(existingFriendship);
 
@@ -82,7 +82,7 @@ export const sendFriendRequest = async (
       requestsRef,
       where("fromUserId", "==", currentUser.uid),
       where("toUserId", "==", toUserId),
-      where("status", "==", "pending")
+      where("status", "==", "pending"),
     );
     const requestSnapshot = await getDocs(existingRequest);
 
@@ -121,7 +121,7 @@ export const getPendingFriendRequests = async (): Promise<FriendRequest[]> => {
     const q = query(
       requestsRef,
       where("toUserId", "==", currentUser.uid),
-      where("status", "==", "pending")
+      where("status", "==", "pending"),
     );
     const snapshot = await getDocs(q);
 
@@ -145,7 +145,7 @@ export const getSentFriendRequests = async (): Promise<FriendRequest[]> => {
     const q = query(
       requestsRef,
       where("fromUserId", "==", currentUser.uid),
-      where("status", "==", "pending")
+      where("status", "==", "pending"),
     );
     const snapshot = await getDocs(q);
 
@@ -161,7 +161,7 @@ export const getSentFriendRequests = async (): Promise<FriendRequest[]> => {
 
 // Accept friend request
 export const acceptFriendRequest = async (
-  requestId: string
+  requestId: string,
 ): Promise<{ success: boolean; message: string }> => {
   const currentUser = auth.currentUser;
   if (!currentUser) {
@@ -213,7 +213,7 @@ export const acceptFriendRequest = async (
 
 // Decline friend request
 export const declineFriendRequest = async (
-  requestId: string
+  requestId: string,
 ): Promise<{ success: boolean; message: string }> => {
   try {
     const requestRef = doc(db, "friendRequests", requestId);
@@ -230,7 +230,7 @@ export const declineFriendRequest = async (
 
 // Remove friend
 export const removeFriend = async (
-  friendId: string
+  friendId: string,
 ): Promise<{ success: boolean; message: string }> => {
   const currentUser = auth.currentUser;
   if (!currentUser) {
@@ -244,7 +244,7 @@ export const removeFriend = async (
     const q1 = query(
       friendsRef,
       where("userId", "==", currentUser.uid),
-      where("friendId", "==", friendId)
+      where("friendId", "==", friendId),
     );
     const snapshot1 = await getDocs(q1);
     snapshot1.forEach(async (doc) => {
@@ -255,7 +255,7 @@ export const removeFriend = async (
     const q2 = query(
       friendsRef,
       where("userId", "==", friendId),
-      where("friendId", "==", currentUser.uid)
+      where("friendId", "==", currentUser.uid),
     );
     const snapshot2 = await getDocs(q2);
     snapshot2.forEach(async (doc) => {
@@ -299,13 +299,13 @@ export const searchFriends = async (searchTerm: string): Promise<Friend[]> => {
   return friends.filter(
     (friend) =>
       friend.friendName.toLowerCase().includes(term) ||
-      friend.friendEmail.toLowerCase().includes(term)
+      friend.friendEmail.toLowerCase().includes(term),
   );
 };
 
 // Cancel a sent friend request by requestId
 export async function cancelFriendRequest(
-  requestId: string
+  requestId: string,
 ): Promise<{ success: boolean; message: string }> {
   const currentUser = auth.currentUser;
   if (!currentUser) {
@@ -324,7 +324,10 @@ export async function cancelFriendRequest(
 
     // Verify the current user is the sender
     if (requestData.fromUserId !== currentUser.uid) {
-      return { success: false, message: "You can only cancel your own requests" };
+      return {
+        success: false,
+        message: "You can only cancel your own requests",
+      };
     }
 
     // Delete the friend request
