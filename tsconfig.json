@@ -27,6 +27,6 @@
     "**/*.tsx",
     ".next/types/**/*.ts",
     "types/**/*.d.ts"
-  ],
+, "firebase.rules"  ],
   "exclude": ["node_modules"]
 }
