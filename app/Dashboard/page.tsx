@@ -26,6 +26,7 @@ import OwnTabContent from "@/components/pages/Dashboard/ownTabContent";
 import FriendTabContent from "@/components/pages/Dashboard/friendTabContent";
 import { fetchUserNames } from "@/lib/firestoreService"; // Import fetchUserNames
 import FriendsManager from "@/components/pages/Dashboard/FriendsManager";
+import GroupsManager from "@/components/pages/Dashboard/GroupsManager";
 import { getFriends } from "@/lib/friendService";
 import { getUserGroups } from "@/lib/groupService";
 
@@ -229,9 +230,10 @@ const Dashboard = () => {
 
       <div className="px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
         <div className="max-w-7xl mx-auto">
-          {/* Add Friends Manager Button */}
-          <div className="mb-4 flex justify-end">
+          {/* Add Friends & Groups Manager Buttons */}
+          <div className="mb-4 flex justify-end gap-2">
             <FriendsManager />
+            <GroupsManager />
           </div>
 
           <Card className="border-0 shadow-xl bg-white/95 backdrop-blur overflow-hidden">

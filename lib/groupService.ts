@@ -17,7 +17,7 @@ export interface GroupMember {
   name: string;
   email: string;
   role: "admin" | "member";
-  joinedAt: any;
+  joinedAt: string; // Changed from 'any' to 'string'
 }
 
 export interface Group {
@@ -93,11 +93,11 @@ export const createGroup = async (
           userId: currentUser.uid,
           name: currentUser.displayName || "Unknown",
           email: currentUser.email || "",
-          role: "admin",
-          joinedAt: serverTimestamp(),
+          role: "admin" as const,
+          joinedAt: new Date().toISOString(), // Changed to ISO string
         },
       ],
-      memberIds: [currentUser.uid], // ADD THIS - simple array for security rules
+      memberIds: [currentUser.uid],
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp(),
     };
@@ -179,7 +179,7 @@ export const acceptGroupInvitation = async (
       name: currentUser.displayName || "Unknown",
       email: currentUser.email || "",
       role: "member",
-      joinedAt: serverTimestamp(),
+      joinedAt: new Date().toISOString(), // Changed to ISO string
     };
 
     await updateDoc(groupRef, {
@@ -320,9 +320,9 @@ export const leaveGroup = async (
     const updatedMembers = groupData.members.filter(
       (m) => m.userId !== currentUser.uid,
     );
-    
+
     const updatedMemberIds = (groupData.memberIds || []).filter(
-      (id: string) => id !== currentUser.uid
+      (id: string) => id !== currentUser.uid,
     ); // ADD THIS
 
     await updateDoc(groupRef, {
