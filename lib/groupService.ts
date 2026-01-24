@@ -27,6 +27,7 @@ export interface Group {
   createdBy: string;
   createdByName: string;
   members: GroupMember[];
+  memberIds: string[]; // ADD THIS
   createdAt: any;
   updatedAt: any;
 }
@@ -59,7 +60,9 @@ export const getUserGroups = async (): Promise<Group[]> => {
         ...doc.data(),
       }))
       .filter((group: any) =>
-        group.members.some((member: GroupMember) => member.userId === currentUser.uid)
+        group.members.some(
+          (member: GroupMember) => member.userId === currentUser.uid,
+        ),
       ) as Group[];
 
     return groups;
@@ -72,7 +75,7 @@ export const getUserGroups = async (): Promise<Group[]> => {
 // Create a new group
 export const createGroup = async (
   name: string,
-  description?: string
+  description?: string,
 ): Promise<{ success: boolean; message: string; groupId?: string }> => {
   const currentUser = auth.currentUser;
   if (!currentUser) {
@@ -94,6 +97,7 @@ export const createGroup = async (
           joinedAt: serverTimestamp(),
         },
       ],
+      memberIds: [currentUser.uid], // ADD THIS - simple array for security rules
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp(),
     };
@@ -115,7 +119,9 @@ export const createGroup = async (
 };
 
 // Get pending group invitations (received)
-export const getPendingGroupInvitations = async (): Promise<GroupInvitation[]> => {
+export const getPendingGroupInvitations = async (): Promise<
+  GroupInvitation[]
+> => {
   const currentUser = auth.currentUser;
   if (!currentUser) return [];
 
@@ -124,7 +130,7 @@ export const getPendingGroupInvitations = async (): Promise<GroupInvitation[]> =
     const q = query(
       invitationsRef,
       where("toUserId", "==", currentUser.uid),
-      where("status", "==", "pending")
+      where("status", "==", "pending"),
     );
     const snapshot = await getDocs(q);
 
@@ -140,7 +146,7 @@ export const getPendingGroupInvitations = async (): Promise<GroupInvitation[]> =
 
 // Accept group invitation
 export const acceptGroupInvitation = async (
-  invitationId: string
+  invitationId: string,
 ): Promise<{ success: boolean; message: string }> => {
   const currentUser = auth.currentUser;
   if (!currentUser) {
@@ -178,6 +184,7 @@ export const acceptGroupInvitation = async (
 
     await updateDoc(groupRef, {
       members: [...groupData.members, newMember],
+      memberIds: [...(groupData.memberIds || []), currentUser.uid], // ADD THIS
       updatedAt: serverTimestamp(),
     });
 
@@ -195,7 +202,7 @@ export const acceptGroupInvitation = async (
 
 // Decline group invitation
 export const declineGroupInvitation = async (
-  invitationId: string
+  invitationId: string,
 ): Promise<{ success: boolean; message: string }> => {
   try {
     const invitationRef = doc(db, "groupInvitations", invitationId);
@@ -213,7 +220,7 @@ export const declineGroupInvitation = async (
 // Send group invitation
 export const sendGroupInvitation = async (
   groupId: string,
-  toUserEmail: string
+  toUserEmail: string,
 ): Promise<{ success: boolean; message: string }> => {
   const currentUser = auth.currentUser;
   if (!currentUser) {
@@ -233,7 +240,7 @@ export const sendGroupInvitation = async (
 
     // Check if user is admin
     const isAdmin = groupData.members.some(
-      (member) => member.userId === currentUser.uid && member.role === "admin"
+      (member) => member.userId === currentUser.uid && member.role === "admin",
     );
 
     if (!isAdmin) {
@@ -254,7 +261,7 @@ export const sendGroupInvitation = async (
 
     // Check if user is already a member
     const isMember = groupData.members.some(
-      (member) => member.userId === toUserId
+      (member) => member.userId === toUserId,
     );
 
     if (isMember) {
@@ -286,7 +293,7 @@ export const sendGroupInvitation = async (
 
 // Leave group
 export const leaveGroup = async (
-  groupId: string
+  groupId: string,
 ): Promise<{ success: boolean; message: string }> => {
   const currentUser = auth.currentUser;
   if (!currentUser) {
@@ -311,11 +318,16 @@ export const leaveGroup = async (
 
     // Remove user from group
     const updatedMembers = groupData.members.filter(
-      (m) => m.userId !== currentUser.uid
+      (m) => m.userId !== currentUser.uid,
     );
+    
+    const updatedMemberIds = (groupData.memberIds || []).filter(
+      (id: string) => id !== currentUser.uid
+    ); // ADD THIS
 
     await updateDoc(groupRef, {
       members: updatedMembers,
+      memberIds: updatedMemberIds, // ADD THIS
       updatedAt: serverTimestamp(),
     });
 

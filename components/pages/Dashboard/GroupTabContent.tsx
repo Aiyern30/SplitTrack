@@ -1,7 +1,13 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { Card, Avatar, AvatarFallback, AvatarImage, Badge } from "@/components/ui";
+import {
+  Card,
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
+  Badge,
+} from "@/components/ui";
 import RenderIcon from "@/components/RenderIcon";
 import ImageModal from "./ImageModal";
 import { Users, Edit2, Trash2 } from "lucide-react";
@@ -95,7 +101,7 @@ const GroupTabContent: React.FC<GroupTabContentProps> = ({
                         <div className="flex items-center gap-2 mb-2 flex-wrap">
                           <Badge
                             className={`${getCategoryColor(
-                              item.icon
+                              item.icon,
                             )} border font-medium text-xs px-2 py-1`}
                           >
                             {item.icon}
